@@ -122,3 +122,17 @@ def test_store_owner_isolation():
     assert s.latest_measure_for("abc", owner="chatA")["run_id"] == rid
     assert s.recent(owner="chatB") == []
     assert MeasureReport  # imported for type availability
+
+
+def test_open_for_unchecked_sends_false_fails_to_a_person():
+    from screentime_core.models import ContractTerm, Segment, TermResult
+    from screentime_core.pipeline import open_for_unchecked
+
+    t = ContractTerm("On screen at least 3 s", {"kind": "min_seconds_total", "seconds": 3})
+    failed = [TermResult(t, False, [], "On screen 0 s in total (needs 3 s).")]
+    if_counted = [TermResult(t, True, [Segment(0, 11)], "On screen 11 s in total (needs 3 s).")]
+    out = open_for_unchecked(failed, if_counted, 1)
+    assert out[0].passed is None and "could not be confirmed" in out[0].detail
+    # a term that fails either way stays a FAIL
+    still = open_for_unchecked(failed, failed, 1)
+    assert still[0].passed is False

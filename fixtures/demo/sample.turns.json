@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-11-09T04:33:40+00:00",
+  "recorded_at": "2026-11-09T04:56:08+00:00",
   "model": "muse-voice-transcribe-1.0",
   "keywords": [
     "LaCroix",
@@ -8,9 +8,9 @@
   "usd": 0.0005,
   "turns": [
     {
-      "start_sec": 0.06,
+      "start_sec": 0.14,
       "end_sec": 9.58,
-      "text": "Okay, guys, so today I'm settling a debate. La Croix or Poppy? I tried both a bunch of times, but La Croix"
+      "text": "Okay guys so today I'm settling a debate. La Croix or Poppy? I tried both a bunch of times but La Croix"
     }
   ]
 }

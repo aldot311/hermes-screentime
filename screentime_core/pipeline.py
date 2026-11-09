@@ -266,7 +266,9 @@ def run_measure(
     track_list = [verifications[oid] for oid in sorted(verifications)]
     verdict_by_object = {str(t.object_id): t.verdict for t in track_list}
     counted = {t.object_id for t in track_list if t.verdict == "match"}
-    unchecked_ids = {t.object_id for t in track_list if t.checked_by == "unchecked"}
+    # Objects nobody could confirm either way (not checked, or checked as "unclear"): never counted, but a term that
+    # fails only because of them goes to a person instead of failing (a false FAIL would hold a creator's fee).
+    unchecked_ids = {t.object_id for t in track_list if t.checked_by == "unchecked" or t.verdict == "unclear"}
 
     # 4. Listen ------------------------------------------------------------------------------------------------------
     mentions: list = []
@@ -366,8 +368,8 @@ def run_measure(
 
 def open_for_unchecked(results: list[TermResult], if_counted: list[TermResult], objects: int) -> list[TermResult]:
     """Terms that failed only because unchecked objects were not counted go to a person (run.ts openForUnchecked)."""
-    which = ("1 tracked object was not checked; counting it" if objects == 1
-             else f"{objects} tracked objects were not checked; counting them")
+    which = ("1 tracked object could not be confirmed (unclear or not checked); counting it" if objects == 1
+             else f"{objects} tracked objects could not be confirmed (unclear or not checked); counting them")
     out = []
     for i, t in enumerate(results):
         alt = if_counted[i] if i < len(if_counted) else None

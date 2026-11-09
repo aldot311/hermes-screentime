@@ -114,8 +114,17 @@ def main() -> None:
         print(f"reel {n:2d} {'(builder)' if builder else '         '} truth {row['truth_sec']:5.1f} s | SAM alone "
               f"{row['sam_alone_sec']:5.1f} s | with check {row['checked_sec']:5.1f} s | ${usd:.3f} | {secs:.0f} s",
               flush=True)
+    # Decision check for the first term (on screen at least 3 s in total) against the labels: right, sent to a person,
+    # or wrong. A Reel whose labelled seconds are 3 or more should pass; one under 3 should fail.
+    decisions = {"right": 0, "to_a_person": 0, "wrong": 0}
+    for row in rows:
+        got = row["terms"][0]["passed"]
+        want = row["truth_sec"] >= 3.0
+        key = "to_a_person" if got is None else ("right" if got == want else "wrong")
+        decisions[key] += 1
+        row["three_second_term"] = {"expected": want, "got": got, "outcome": key}
     summary = {"sam_alone": prf(totals["sam"]), "with_check": prf(totals["checked"]), "frames": totals,
-               "usd_total": round(usd_total, 4), "reels": len(rows)}
+               "three_second_term": decisions, "usd_total": round(usd_total, 4), "reels": len(rows)}
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     Path(args.out).write_text(json.dumps({"summary": summary, "rows": rows, "product": PRODUCT,
                                           "photo": "fixtures/demo/product.jpg"}, indent=2, default=str))
