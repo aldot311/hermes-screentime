@@ -6,9 +6,9 @@
       "f1": 0.9499007936507935
     },
     "with_check": {
-      "precision": 0.9494418910045962,
-      "recall": 0.7488348006214397,
-      "f1": 0.8372900984365953
+      "precision": 0.9506398537477148,
+      "recall": 0.8078715691351631,
+      "f1": 0.8734602463605823
     },
     "frames": {
       "sam": {
@@ -17,9 +17,9 @@
         "fn": 16
       },
       "checked": {
-        "tp": 1446,
-        "fp": 77,
-        "fn": 485
+        "tp": 1560,
+        "fp": 81,
+        "fn": 371
       }
     },
     "three_second_term": {
@@ -32,9 +32,9 @@
     "engine": "openai:gpt-5.4-mini",
     "fps": 3,
     "tokens": {
-      "in": 230612,
-      "out": 53390,
-      "calls": 189
+      "in": 9096,
+      "out": 3568,
+      "calls": 14
     }
   },
   "rows": [
@@ -70,7 +70,7 @@
         },
         {
           "object": 4,
-          "verdict": "unclear"
+          "verdict": "lookalike"
         },
         {
           "object": 5,
@@ -132,7 +132,7 @@
         }
       ],
       "usd": 0.0,
-      "seconds_to_run": 14.7,
+      "seconds_to_run": 6.2,
       "three_second_term": {
         "expected": true,
         "got": null,
@@ -185,7 +185,7 @@
         }
       ],
       "usd": 0.0,
-      "seconds_to_run": 6.7,
+      "seconds_to_run": 0.6,
       "three_second_term": {
         "expected": false,
         "got": false,
@@ -213,10 +213,6 @@
         {
           "object": 1,
           "verdict": "match"
-        },
-        {
-          "object": 2,
-          "verdict": "match"
         }
       ],
       "terms": [
@@ -234,7 +230,7 @@
         }
       ],
       "usd": 0.0,
-      "seconds_to_run": 7.5,
+      "seconds_to_run": 2.2,
       "three_second_term": {
         "expected": false,
         "got": true,
@@ -287,7 +283,7 @@
         }
       ],
       "usd": 0.0,
-      "seconds_to_run": 8.9,
+      "seconds_to_run": 0.6,
       "three_second_term": {
         "expected": true,
         "got": true,
@@ -300,16 +296,16 @@
       "frames": 326,
       "truth_sec": 21.33,
       "sam_alone_sec": 21.67,
-      "checked_sec": 20.0,
+      "checked_sec": 21.0,
       "sam": {
         "tp": 319,
         "fp": 6,
         "fn": 1
       },
       "checked": {
-        "tp": 300,
-        "fp": 0,
-        "fn": 20
+        "tp": 312,
+        "fp": 3,
+        "fn": 8
       },
       "objects": [
         {
@@ -318,31 +314,11 @@
         },
         {
           "object": 2,
-          "verdict": "unclear"
+          "verdict": "lookalike"
         },
         {
           "object": 3,
           "verdict": "lookalike"
-        },
-        {
-          "object": 4,
-          "verdict": "match"
-        },
-        {
-          "object": 5,
-          "verdict": "match"
-        },
-        {
-          "object": 6,
-          "verdict": "unclear"
-        },
-        {
-          "object": 7,
-          "verdict": "match"
-        },
-        {
-          "object": 8,
-          "verdict": "match"
         }
       ],
       "terms": [
@@ -360,7 +336,7 @@
         }
       ],
       "usd": 0.0,
-      "seconds_to_run": 16.5,
+      "seconds_to_run": 2.5,
       "three_second_term": {
         "expected": true,
         "got": true,
@@ -421,7 +397,7 @@
         }
       ],
       "usd": 0.0,
-      "seconds_to_run": 16.1,
+      "seconds_to_run": 1.0,
       "three_second_term": {
         "expected": true,
         "got": true,
@@ -434,16 +410,16 @@
       "frames": 182,
       "truth_sec": 12.13,
       "sam_alone_sec": 12.0,
-      "checked_sec": 5.33,
+      "checked_sec": 8.0,
       "sam": {
         "tp": 180,
         "fp": 0,
         "fn": 2
       },
       "checked": {
-        "tp": 80,
+        "tp": 120,
         "fp": 0,
-        "fn": 102
+        "fn": 62
       },
       "objects": [
         {
@@ -452,7 +428,7 @@
         },
         {
           "object": 2,
-          "verdict": "unclear"
+          "verdict": "match"
         },
         {
           "object": 3,
@@ -468,10 +444,6 @@
         },
         {
           "object": 6,
-          "verdict": "unclear"
-        },
-        {
-          "object": 7,
           "verdict": "match"
         }
       ],
@@ -490,7 +462,7 @@
         }
       ],
       "usd": 0.0,
-      "seconds_to_run": 10.9,
+      "seconds_to_run": 3.1,
       "three_second_term": {
         "expected": true,
         "got": true,
@@ -503,16 +475,16 @@
       "frames": 218,
       "truth_sec": 13.73,
       "sam_alone_sec": 14.53,
-      "checked_sec": 7.67,
+      "checked_sec": 11.87,
       "sam": {
         "tp": 206,
         "fp": 12,
         "fn": 0
       },
       "checked": {
-        "tp": 112,
-        "fp": 3,
-        "fn": 94
+        "tp": 174,
+        "fp": 4,
+        "fn": 32
       },
       "objects": [
         {
@@ -529,27 +501,11 @@
         },
         {
           "object": 4,
-          "verdict": "unclear"
+          "verdict": "lookalike"
         },
         {
           "object": 5,
           "verdict": "match"
-        },
-        {
-          "object": 6,
-          "verdict": "unclear"
-        },
-        {
-          "object": 7,
-          "verdict": "unclear"
-        },
-        {
-          "object": 8,
-          "verdict": "lookalike"
-        },
-        {
-          "object": 9,
-          "verdict": "unclear"
         }
       ],
       "terms": [
@@ -567,7 +523,7 @@
         }
       ],
       "usd": 0.0,
-      "seconds_to_run": 11.3,
+      "seconds_to_run": 3.2,
       "three_second_term": {
         "expected": true,
         "got": true,
@@ -612,7 +568,7 @@
         }
       ],
       "usd": 0.0,
-      "seconds_to_run": 8.0,
+      "seconds_to_run": 0.6,
       "three_second_term": {
         "expected": true,
         "got": true,
@@ -677,7 +633,7 @@
         }
       ],
       "usd": 0.0,
-      "seconds_to_run": 11.6,
+      "seconds_to_run": 0.9,
       "three_second_term": {
         "expected": true,
         "got": true,
@@ -722,7 +678,7 @@
         }
       ],
       "usd": 0.0,
-      "seconds_to_run": 8.4,
+      "seconds_to_run": 0.6,
       "three_second_term": {
         "expected": true,
         "got": true,

@@ -40,6 +40,7 @@ from .verify import Verifier, pick_frames, unchecked
 
 UNBILLED_CODES = ("auth", "billing", "model_not_found", "bad_input", "rate_limited")
 MAX_VERIFY_OBJECTS = 6  # objects checked per run, most-seen first; the rest are "not checked" (never counted)
+MAX_VERIFY_OBJECTS_VISION = 12  # a model's boxes split one can into more objects than SAM's tracks do
 MAX_VIDEO_SECONDS_DEFAULT = 120
 NOUN_SUGGESTIONS = ["can", "bottle", "cup", "box", "bag", "shoe", "phone", "jar", "tube", "package"]
 
@@ -243,9 +244,10 @@ def run_measure(
     product = req.product or (engines.replay.product if engines.replay else "")
     order = _order_tracks(tracks)
     verifications: dict[int, TrackVerification] = {}
-    for oid in order[MAX_VERIFY_OBJECTS:]:
-        verifications[oid] = unchecked(oid, f"only the {MAX_VERIFY_OBJECTS} most-seen objects are checked")
-    to_check = order[:MAX_VERIFY_OBJECTS]
+    cap = MAX_VERIFY_OBJECTS_VISION if engines.tracker == "vision" else MAX_VERIFY_OBJECTS
+    for oid in order[cap:]:
+        verifications[oid] = unchecked(oid, f"only the {cap} most-seen objects are checked")
+    to_check = order[:cap]
     paid_checks = getattr(engines.verifier, "name", "").startswith("muse-spark")
     reservations = {}
     for oid in to_check:

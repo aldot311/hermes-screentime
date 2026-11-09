@@ -83,9 +83,9 @@ Measured with the plugin itself on 11 human-labelled test Reels (2,800 frames at
 
 | Models (tracker + product check) | Precision | Recall | F1 | 3-second term right |
 |---|---|---|---|---|
-| Gemini 3.8 Flash, no Meta key | **99.4%** | **93.1%** | **96.1%** | 11 of 11 |
+| Gemini 3.8 Flash, no Meta key | **98.7%** | **97.2%** | **98.0%** | 11 of 11 |
 | SAM 3.1 + Muse Spark (Meta key) | 98.1% | 81.7% | 89.1% | 8 (2 to a person, 1 wrong) |
-| GPT-5.4 mini, no Meta key | 94.9% | 74.9% | 83.7% | 9 (1 to a person, 1 wrong) |
+| GPT-5.4 mini, no Meta key | 95.1% | 80.8% | 87.3% | 9 (1 to a person, 1 wrong) |
 
 The model matters most in the product check. Gemini and Muse Spark both count 0.0 s on the Reel that shows only a
 look-alike can (a tracker alone counts 4.3 to 5.3 s there); GPT-5.4 mini counted the look-alike. Small or blurred cans

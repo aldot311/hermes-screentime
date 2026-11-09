@@ -123,18 +123,33 @@ def parse_boxes(parsed: Any, n: int) -> list[list[_Box]]:
     return out
 
 
+def _affinity(a: _Box, b: _Box) -> float:
+    """How likely b is a in a later sample: their overlap, or, for a fast-moving object whose boxes no longer
+    overlap, a small score when b's centre is within about one box of a's and the sizes are alike."""
+    iou = _iou(a, b)
+    if iou >= MIN_IOU:
+        return iou
+    size_a, size_b = a.area(), b.area()
+    if not size_a or not size_b or not 0.4 <= size_b / size_a <= 2.5:
+        return 0.0
+    reach = max(a.x2 - a.x1, a.y2 - a.y1, b.x2 - b.x1, b.y2 - b.y1)
+    dist = (((a.x1 + a.x2) - (b.x1 + b.x2)) ** 2 + ((a.y1 + a.y2) - (b.y1 + b.y2)) ** 2) ** 0.5 / 2
+    return MIN_IOU * 0.9 * (1 - dist / reach) if dist < reach else 0.0
+
+
 def link(samples: list[list[_Box]]) -> list[list[tuple[int, _Box]]]:
-    """Objects as [(sample index, box)], linked across samples by overlap (greedy, best overlap first)."""
+    """Objects as [(sample index, box)], linked across samples by overlap, or by nearness for fast movers
+    (greedy, best first)."""
     tracks: list[list[tuple[int, _Box]]] = []
     for s, boxes in enumerate(samples):
         live = [t for t in range(len(tracks)) if s - tracks[t][-1][0] <= LINK_GAP + 1]
         pairs = sorted(
-            ((_iou(tracks[t][-1][1], b), t, j) for t in live for j, b in enumerate(boxes)), reverse=True
+            ((_affinity(tracks[t][-1][1], b), t, j) for t in live for j, b in enumerate(boxes)), reverse=True
         )
         used_t: set[int] = set()
         used_b: set[int] = set()
         for score, t, j in pairs:
-            if score < MIN_IOU:
+            if score <= 0:
                 break
             if t in used_t or j in used_b or tracks[t][-1][0] == s:
                 continue

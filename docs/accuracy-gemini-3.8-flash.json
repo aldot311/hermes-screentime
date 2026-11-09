@@ -6,9 +6,9 @@
       "f1": 0.9628327473631341
     },
     "with_check": {
-      "precision": 0.9939159292035398,
-      "recall": 0.9306059036768514,
-      "f1": 0.9612195774271195
+      "precision": 0.9873750657548659,
+      "recall": 0.972035214914552,
+      "f1": 0.9796450939457202
     },
     "frames": {
       "sam": {
@@ -17,9 +17,9 @@
         "fn": 14
       },
       "checked": {
-        "tp": 1797,
-        "fp": 11,
-        "fn": 134
+        "tp": 1877,
+        "fp": 24,
+        "fn": 54
       }
     },
     "three_second_term": {
@@ -32,9 +32,9 @@
     "engine": "gemini:gemini-3.8-flash",
     "fps": 3,
     "tokens": {
-      "in": 706947,
-      "out": 35262,
-      "calls": 161
+      "in": 61090,
+      "out": 2218,
+      "calls": 15
     }
   },
   "rows": [
@@ -44,16 +44,16 @@
       "frames": 251,
       "truth_sec": 11.2,
       "sam_alone_sec": 13.0,
-      "checked_sec": 9.0,
+      "checked_sec": 10.33,
       "sam": {
         "tp": 168,
         "fp": 27,
         "fn": 0
       },
       "checked": {
-        "tp": 135,
+        "tp": 155,
         "fp": 0,
-        "fn": 33
+        "fn": 13
       },
       "objects": [
         {
@@ -70,7 +70,7 @@
         },
         {
           "object": 4,
-          "verdict": "unclear"
+          "verdict": "match"
         },
         {
           "object": 5,
@@ -82,26 +82,6 @@
         },
         {
           "object": 7,
-          "verdict": "unclear"
-        },
-        {
-          "object": 8,
-          "verdict": "unclear"
-        },
-        {
-          "object": 9,
-          "verdict": "unclear"
-        },
-        {
-          "object": 10,
-          "verdict": "match"
-        },
-        {
-          "object": 11,
-          "verdict": "unclear"
-        },
-        {
-          "object": 12,
           "verdict": "unclear"
         }
       ],
@@ -120,7 +100,7 @@
         }
       ],
       "usd": 0.0,
-      "seconds_to_run": 30.3,
+      "seconds_to_run": 7.4,
       "three_second_term": {
         "expected": true,
         "got": true,
@@ -133,24 +113,20 @@
       "frames": 186,
       "truth_sec": 2.6,
       "sam_alone_sec": 2.67,
-      "checked_sec": 2.33,
+      "checked_sec": 2.67,
       "sam": {
         "tp": 38,
         "fp": 2,
         "fn": 1
       },
       "checked": {
-        "tp": 35,
-        "fp": 0,
-        "fn": 4
+        "tp": 38,
+        "fp": 2,
+        "fn": 1
       },
       "objects": [
         {
           "object": 1,
-          "verdict": "unclear"
-        },
-        {
-          "object": 2,
           "verdict": "match"
         }
       ],
@@ -169,7 +145,7 @@
         }
       ],
       "usd": 0.0,
-      "seconds_to_run": 13.6,
+      "seconds_to_run": 4.5,
       "three_second_term": {
         "expected": false,
         "got": false,
@@ -218,7 +194,7 @@
         }
       ],
       "usd": 0.0,
-      "seconds_to_run": 17.7,
+      "seconds_to_run": 0.8,
       "three_second_term": {
         "expected": false,
         "got": false,
@@ -267,7 +243,7 @@
         }
       ],
       "usd": 0.0,
-      "seconds_to_run": 13.6,
+      "seconds_to_run": 0.6,
       "three_second_term": {
         "expected": true,
         "got": true,
@@ -280,16 +256,16 @@
       "frames": 326,
       "truth_sec": 21.33,
       "sam_alone_sec": 21.67,
-      "checked_sec": 18.33,
+      "checked_sec": 20.67,
       "sam": {
         "tp": 319,
         "fp": 6,
         "fn": 1
       },
       "checked": {
-        "tp": 272,
+        "tp": 307,
         "fp": 3,
-        "fn": 48
+        "fn": 13
       },
       "objects": [
         {
@@ -306,7 +282,7 @@
         },
         {
           "object": 4,
-          "verdict": "lookalike"
+          "verdict": "unclear"
         },
         {
           "object": 5,
@@ -318,30 +294,10 @@
         },
         {
           "object": 7,
-          "verdict": "unclear"
-        },
-        {
-          "object": 8,
-          "verdict": "lookalike"
-        },
-        {
-          "object": 9,
-          "verdict": "unclear"
-        },
-        {
-          "object": 10,
-          "verdict": "unclear"
-        },
-        {
-          "object": 11,
-          "verdict": "unclear"
-        },
-        {
-          "object": 12,
           "verdict": "match"
         },
         {
-          "object": 13,
+          "object": 8,
           "verdict": "unclear"
         }
       ],
@@ -360,7 +316,7 @@
         }
       ],
       "usd": 0.0,
-      "seconds_to_run": 19.9,
+      "seconds_to_run": 8.5,
       "three_second_term": {
         "expected": true,
         "got": true,
@@ -373,16 +329,16 @@
       "frames": 510,
       "truth_sec": 14.0,
       "sam_alone_sec": 14.0,
-      "checked_sec": 13.33,
+      "checked_sec": 13.67,
       "sam": {
         "tp": 205,
         "fp": 5,
         "fn": 5
       },
       "checked": {
-        "tp": 197,
-        "fp": 3,
-        "fn": 13
+        "tp": 200,
+        "fp": 5,
+        "fn": 10
       },
       "objects": [
         {
@@ -395,10 +351,6 @@
         },
         {
           "object": 3,
-          "verdict": "unclear"
-        },
-        {
-          "object": 4,
           "verdict": "match"
         }
       ],
@@ -417,7 +369,7 @@
         }
       ],
       "usd": 0.0,
-      "seconds_to_run": 32.1,
+      "seconds_to_run": 4.7,
       "three_second_term": {
         "expected": true,
         "got": true,
@@ -462,7 +414,7 @@
         }
       ],
       "usd": 0.0,
-      "seconds_to_run": 13.3,
+      "seconds_to_run": 0.6,
       "three_second_term": {
         "expected": true,
         "got": true,
@@ -475,16 +427,16 @@
       "frames": 218,
       "truth_sec": 13.73,
       "sam_alone_sec": 14.53,
-      "checked_sec": 12.33,
+      "checked_sec": 14.2,
       "sam": {
         "tp": 206,
         "fp": 12,
         "fn": 0
       },
       "checked": {
-        "tp": 182,
-        "fp": 3,
-        "fn": 24
+        "tp": 201,
+        "fp": 12,
+        "fn": 5
       },
       "objects": [
         {
@@ -501,11 +453,7 @@
         },
         {
           "object": 4,
-          "verdict": "unclear"
-        },
-        {
-          "object": 5,
-          "verdict": "unclear"
+          "verdict": "match"
         }
       ],
       "terms": [
@@ -523,7 +471,7 @@
         }
       ],
       "usd": 0.0,
-      "seconds_to_run": 18.5,
+      "seconds_to_run": 4.0,
       "three_second_term": {
         "expected": true,
         "got": true,
@@ -568,7 +516,7 @@
         }
       ],
       "usd": 0.0,
-      "seconds_to_run": 11.3,
+      "seconds_to_run": 0.7,
       "three_second_term": {
         "expected": true,
         "got": true,
@@ -613,7 +561,7 @@
         }
       ],
       "usd": 0.0,
-      "seconds_to_run": 12.9,
+      "seconds_to_run": 0.7,
       "three_second_term": {
         "expected": true,
         "got": true,

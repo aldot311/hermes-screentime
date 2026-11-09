@@ -164,3 +164,13 @@ def test_measure_end_to_end_with_hermes_models_only(tmp_path):
     assert [t.passed for t in rep.terms] == [True, True]
     assert len(rep.metrics.mentions) == 3  # one per window, windows at 0, 4 and 8 s (dedupe keeps hits 4 s apart)
     assert any("not by SAM 3.1" in n for n in rep.notes)
+
+
+def test_link_follows_a_fast_mover_by_nearness_but_not_a_far_or_odd_sized_box():
+    a = _Box(0.10, 0.10, 0.20, 0.30)
+    moved = _Box(0.22, 0.12, 0.32, 0.32)  # no overlap, centre about one box away, same size
+    tiny = _Box(0.21, 0.11, 0.22, 0.12)  # near but a fraction of the size
+    far = _Box(0.60, 0.60, 0.70, 0.80)
+    assert [len(t) for t in link([[a], [moved]])] == [2]
+    assert [len(t) for t in link([[a], [tiny]])] == [1, 1]
+    assert [len(t) for t in link([[a], [far]])] == [1, 1]

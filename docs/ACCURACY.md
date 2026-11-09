@@ -53,15 +53,22 @@ checks each object. The models were called directly with the request Hermes's `c
 
 | Model | Tracker alone P / R | With the check P / R / F1 | Look-alike Reel | 3-second term |
 |---|---|---|---|---|
-| Gemini 3.8 Flash | 93.5% / 99.3% | **99.4% / 93.1% / 96.1%** | 5.3 s -> **0.0 s** | right 11 |
-| GPT-5.4 mini | 91.1% / 99.2% | 94.9% / 74.9% / 83.7% | 4.3 s -> 4.3 s | right 9, to a person 1, wrong 1 |
+| Gemini 3.8 Flash | 93.5% / 99.3% | **98.7% / 97.2% / 98.0%** | 5.3 s -> **0.0 s** | right 11 |
+| GPT-5.4 mini | 91.1% / 99.2% | 95.1% / 80.8% / 87.3% | 4.3 s -> 4.3 s | right 9, to a person 1, wrong 1 |
 | SAM 3.1 + Muse Spark (above) | 95.0% / 99.6% | 98.1% / 81.7% / 89.1% | 4.3 s -> 0.0 s | right 8, to a person 2, wrong 1 |
 
 - Every model found the cans (tracker recall 99%). The difference is the product check.
+- Tuned on these Reels, so read the numbers as optimistic. The first run (same models) gave Gemini 99.4% / 93.1% / 96.1%
+  and GPT-5.4 mini 94.9% / 74.9% / 83.7%. A real run then showed a model's boxes splitting one can into many short
+  objects, of which only the 6 most-seen were checked. Two changes followed: boxes that no longer overlap but sit about
+  one box apart at a similar size are linked (fast movement), and up to 12 objects are checked with this tracker. The
+  table is after the change, with the model answers for the tracking reused from the first run.
+- Run to run: three real Hermes runs of the builder's 21.7 s Reel (Gemini, no cache) counted 20.7, 21.3 and 20.3 s
+  against 21.3 s labelled.
 - The two Reels where Muse Spark called the small, blurred can unclear (0.0 s counted): Gemini confirmed it on both
-  (9.0 of 11.2 s and 12.0 of 12.1 s labelled); GPT-5.4 mini on neither fully (0.0 and 5.3 s).
-- GPT-5.4 mini counted the different-flavour can on the look-alike-only Reel and rejected real cans on two others
-  (5.3 and 7.7 s of about 12 to 14 s). Use a stronger model for `screentime_verify` if the check matters.
+  (10.3 of 11.2 s and 12.0 of 12.1 s labelled); GPT-5.4 mini on neither fully (0.0 and 8.0 s).
+- GPT-5.4 mini counted the different-flavour can on the look-alike-only Reel and missed real cans on others (8.0 of
+  12.1 s, 10.3 of 13.3 s). Use a stronger model for `screentime_verify` if the check matters.
 - Timing comes from samples, so each object's start and end are accurate to about a third of a second; sizes come from
   boxes and read larger than SAM's masks. A real Hermes run (Gemini 3.8 Flash for both tasks, OpenAI speech-to-text, no
   Meta key) took 37 s for a 21.7 s Reel.
