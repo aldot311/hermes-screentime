@@ -63,8 +63,8 @@ checks each object. The models were called directly with the request Hermes's `c
   objects, of which only the 6 most-seen were checked. Two changes followed: boxes that no longer overlap but sit about
   one box apart at a similar size are linked (fast movement), and up to 12 objects are checked with this tracker. The
   table is after the change, with the model answers for the tracking reused from the first run.
-- Run to run: three real Hermes runs of the builder's 21.7 s Reel (Gemini, no cache) counted 20.7, 21.3 and 20.3 s
-  against 21.3 s labelled.
+- Run to run: four real Hermes runs of the builder's 21.7 s Reel (Gemini, no cache) counted 20.7, 21.3, 20.3 and
+  19.0 s against 21.3 s labelled. A model's answers vary between runs; SAM 3.1's do not.
 - The two Reels where Muse Spark called the small, blurred can unclear (0.0 s counted): Gemini confirmed it on both
   (10.3 of 11.2 s and 12.0 of 12.1 s labelled); GPT-5.4 mini on neither fully (0.0 and 8.0 s).
 - GPT-5.4 mini counted the different-flavour can on the look-alike-only Reel and missed real cans on others (8.0 of
