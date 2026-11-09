@@ -6,9 +6,12 @@ registration check (which blocks sockets) never sees network access.
 
 from __future__ import annotations
 
+import logging
 import sqlite3
 from pathlib import Path
 from typing import Any, Optional
+
+log = logging.getLogger(__name__)
 
 PLUGIN_ID = "screentime"
 AUX_TASK = "screentime_verify"
@@ -102,8 +105,8 @@ def allowed_roots() -> list[Path]:
     roots = [_agent_cwd(), Path.home()]
     try:
         roots.append(hermes_home())
-    except Exception:  # plugin storage unavailable outside Hermes
-        pass
+    except Exception as exc:  # plugin storage unavailable outside Hermes
+        log.debug("screentime: no Hermes home (%s)", exc)
     return [r.resolve() for r in roots]
 
 
