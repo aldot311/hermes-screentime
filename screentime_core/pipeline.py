@@ -22,6 +22,7 @@ from typing import Any, Optional
 
 from . import budget as budget_mod
 from .errors import ScreentimeError
+from .format import short_label
 from .models import (
     FPS,
     ContractTerm,
@@ -37,6 +38,7 @@ from .models import (
 from .store import new_run_id
 from .verify import Verifier, pick_frames, unchecked
 
+UNBILLED_CODES = ("auth", "billing", "model_not_found", "bad_input", "rate_limited")
 MAX_VERIFY_OBJECTS = 6  # objects checked per run, most-seen first; the rest are "not checked" (never counted)
 MAX_VIDEO_SECONDS_DEFAULT = 120
 NOUN_SUGGESTIONS = ["can", "bottle", "cup", "box", "bag", "shoe", "phone", "jar", "tube", "package"]
@@ -57,6 +59,7 @@ class ReplayData:
     sam_prompt: str = ""
     photo_path: Optional[str] = None
     brand_names: list[str] = field(default_factory=list)
+    audio_path: Optional[str] = None  # the clip's own audio (the normalized sample has none), for the proof reel
 
     @classmethod
     def load(cls, folder: Path) -> ReplayData:
@@ -73,6 +76,7 @@ class ReplayData:
             sam_prompt=meta.get("prompt", "drink can"),
             photo_path=str(folder / "product.jpg") if (folder / "product.jpg").exists() else None,
             brand_names=verdicts_raw.get("brand_names", []),
+            audio_path=str(folder / "sample_audio.m4a") if (folder / "sample_audio.m4a").exists() else None,
         )
 
 
@@ -173,7 +177,8 @@ def run_measure(
     else:
         norm = workdir / f"{run_id}.mp4"
         info = media.normalize(str(src), str(norm), fps=FPS, max_edge=960)
-    info = replace(info, has_audio=original.has_audio)
+    replay_audio = engines.replay.audio_path if (engines.tracker == "replay" and engines.replay) else None
+    info = replace(info, has_audio=original.has_audio or bool(replay_audio))
     say("normalized", {"frames": info.frame_count, "seconds": info.duration_sec, "width": info.width, "height": info.height})
 
     # 2. Track ---------------------------------------------------------------------------------------------------------
@@ -193,12 +198,18 @@ def run_measure(
         res = budget.reserve(run_id, est, f'Track "{sam_prompt}"') if budget else None
         file_id = None
         try:
-            file_id = engines.client.upload_file(str(norm), expires_after_sec=3600)
-            sam = engines.client.sam_track(sam_prompt, file_id=file_id, frame_count=info.frame_count)
-        except ScreentimeError as exc:
-            if budget and res and exc.code in ("auth", "billing", "model_not_found", "bad_input"):
-                budget.release(res)  # refused before anything was billed
-            raise
+            try:
+                file_id = engines.client.upload_file(str(norm), expires_after_sec=3600)
+            except ScreentimeError:
+                if budget and res:
+                    budget.release(res)  # uploads are not billed
+                raise
+            try:
+                sam = engines.client.sam_track(sam_prompt, file_id=file_id, frame_count=info.frame_count)
+            except ScreentimeError as exc:
+                if budget and res and exc.code in UNBILLED_CODES:
+                    budget.release(res)  # refused before anything was billed
+                raise
         finally:
             if file_id:
                 try:
@@ -271,15 +282,21 @@ def run_measure(
         say("listening", {})
         wav = workdir / f"{run_id}.wav"
         if media.extract_audio_wav(str(src), str(wav)):
-            res = budget.reserve(run_id, budget_mod.TRANSCRIBE_RESERVE_USD, "Listen for the brand") if budget else None
-            t0 = time.monotonic()
+            res = None
             try:
-                turn_objs = engines.client.transcribe(str(wav), keywords=brand_names)
-                turns = [{"start_sec": t.start_sec, "end_sec": t.end_sec, "text": t.text} for t in turn_objs]
+                res = budget.reserve(run_id, budget_mod.TRANSCRIBE_RESERVE_USD, "Listen for the brand") if budget else None
+                t0 = time.monotonic()
+                transcript = engines.client.transcribe(str(wav), keywords=brand_names)
+                turns = [{"start_sec": t.start_sec, "end_sec": t.end_sec, "text": t.text} for t in transcript]
+                usd = float(getattr(transcript, "usd", None) or budget_mod.TRANSCRIBE_RESERVE_USD)
+                ms = int(getattr(transcript, "ms", None) or (time.monotonic() - t0) * 1000)
+                if budget and res:
+                    budget.settle(res, usd)
                 calls.append(ReceiptCall("muse-voice-transcribe-1.0", "Listen for the brand",
-                                         f"{original.duration_sec:.1f} s of audio", f"{len(turns)} turns",
-                                         int((time.monotonic() - t0) * 1000), budget_mod.TRANSCRIBE_RESERVE_USD))
+                                         f"{original.duration_sec:.1f} s of audio", f"{len(turns)} turns", ms, usd))
             except ScreentimeError as exc:
+                if budget and res and exc.code in UNBILLED_CODES:
+                    budget.release(res)
                 spoken_checked = False
                 notes.append(f"Speech was not checked: {exc.message}")
     if turns is not None:
@@ -339,7 +356,7 @@ def run_measure(
         out_mp4 = outdir / f"proof_{run_id}.mp4"
         try:
             proof_mod.render_proof(str(norm), detections, verdict_by_object, metrics, info, str(out_mp4),
-                                   product_label=product or sam_prompt, audio_source=str(src) if info.has_audio else None)
+                                   product_label=short_label(product) or sam_prompt, audio_source=replay_audio or (str(src) if original.has_audio else None))
             report.proof_path = str(out_mp4)
         except ScreentimeError as exc:
             report.notes.append(f"The proof reel could not be made: {exc.message}")

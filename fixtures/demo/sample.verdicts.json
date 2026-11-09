@@ -1,0 +1,66 @@
+{
+  "recorded_at": "2026-11-09T04:33:40+00:00",
+  "model": "muse-spark-1.3",
+  "product": "a pink LaCroix Strawberry Peach sparkling water can: blue 'LaCroix' script over a yellow peach, red and yellow hearts, strawberries and green stripes near the base",
+  "brand_names": [
+    "LaCroix",
+    "La Croix"
+  ],
+  "usd": 0.00754,
+  "verdicts": {
+    "0": {
+      "verdict": "lookalike",
+      "visibility": "clear",
+      "reason": "The tracked can is a pink Poppi Raspberry Rose can with white Poppi logo and raspberry graphics, not LaCroix Strawberry Peach.",
+      "checks": [
+        {
+          "feature": "blue LaCroix script",
+          "seen": "no"
+        },
+        {
+          "feature": "yellow peach graphic",
+          "seen": "no"
+        },
+        {
+          "feature": "red and yellow hearts",
+          "seen": "no"
+        },
+        {
+          "feature": "Strawberry Peach text",
+          "seen": "no"
+        },
+        {
+          "feature": "strawberries and green stripes",
+          "seen": "no"
+        }
+      ]
+    },
+    "1": {
+      "verdict": "match",
+      "visibility": "clear",
+      "reason": "The held can shows the pink base, blue LaCroix script, Strawberry Peach text, hearts and peach graphics matching the reference.",
+      "checks": [
+        {
+          "feature": "pink can body",
+          "seen": "yes"
+        },
+        {
+          "feature": "blue LaCroix script",
+          "seen": "yes"
+        },
+        {
+          "feature": "yellow peach graphic",
+          "seen": "yes"
+        },
+        {
+          "feature": "red and yellow hearts",
+          "seen": "yes"
+        },
+        {
+          "feature": "Strawberry Peach text",
+          "seen": "yes"
+        }
+      ]
+    }
+  }
+}

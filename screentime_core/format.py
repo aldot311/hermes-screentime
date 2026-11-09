@@ -15,10 +15,22 @@ def _pct(x: float) -> str:
     return f"{x * 100:.0f}%"
 
 
+def short_label(product: str, limit: int = 48) -> str:
+    """A short name for headlines: the description up to its first colon, comma or semicolon, without 'a/an/the'."""
+    text = " ".join((product or "").split())
+    for sep in (":", ";", ","):
+        if sep in text:
+            text = text.split(sep, 1)[0]
+    for article in ("a ", "an ", "the "):
+        if text.lower().startswith(article):
+            text = text[len(article):]
+    return (text[: limit - 1] + "\u2026") if len(text) > limit else text
+
+
 def measure_summary(r: MeasureReport) -> str:
     m = r.metrics
     headline = (
-        f"{r.product or r.prompt}: {m.seconds_on_screen:.1f} s on screen of {r.info.duration_sec:.1f} s "
+        f"{short_label(r.product) or r.prompt}: {m.seconds_on_screen:.1f} s on screen of {r.info.duration_sec:.1f} s "
         f"({_pct(m.share_of_video)})"
     )
     lines = [headline]

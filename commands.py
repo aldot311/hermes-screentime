@@ -49,8 +49,8 @@ def run_demo(owner: str = "local", *, render: bool = True):
         brand_names=rp.brand_names,
         terms=terms_from_args([
             {"text": "On screen at least 3 seconds in total", "kind": "min_seconds_total", "seconds": 3},
-            {"text": "Show the can in the first 2 seconds", "kind": "first_seen_before", "seconds": 2},
-            {"text": "One continuous shot of the can of at least 2 seconds", "kind": "min_continuous", "seconds": 2},
+            {"text": "Says LaCroix out loud", "kind": "mentioned", "min_times": 1},
+            {"text": "Discloses the ad: says it is an ad or sponsored", "kind": "disclosed"},
         ]),
     )
     engines = Engines("replay", ReplayVerifier(rp.verdicts), None, transcribe=False, replay=rp)
