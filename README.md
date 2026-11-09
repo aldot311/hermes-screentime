@@ -8,7 +8,10 @@ frame of the video (15 frames a second), checks each one against the product so 
 not counted, and checks plain-English terms such as "on screen at least 3 seconds" as typed rules. A second mode,
 Compare, measures a creator's draft against a reference take, shot by shot.
 
-<!-- [GIF: proof reel] [PNG: compare card] -->
+<p>
+  <img src="docs/media/proof.gif" width="270" alt="Proof reel: a lime box follows the LaCroix can, a dashed red box marks a Poppi can that is not counted, and a strip at the bottom counts the seconds">
+  <img src="docs/media/compare.png" width="360" alt="Compare card: a single-shot draft next to a 7-shot recut, with the measured differences">
+</p>
 
 ## Try it in one minute
 
@@ -66,7 +69,17 @@ It measures; it does not predict. There is no score, no retention curve and no "
 
 ## Accuracy
 
-<!-- Filled from the plugin's own run on 11 human-labelled Reels (dev/accuracy.py). -->
+Measured with the plugin itself on 11 human-labelled test Reels (2,800 frames at 15 fps), frame by frame:
+
+| | Precision | Recall | F1 |
+|---|---|---|---|
+| SAM 3.1 alone | 95.0% | 99.6% | 97.2% |
+| With the product check | **98.1%** | **81.7%** | 89.1% |
+
+On the Reel with only a look-alike can, SAM alone counts 4.3 s and Screen-Time counts 0.0 s. The 3-second term was
+right on 8 Reels, sent to a person on 2 and wrong on 1. It is cautious on purpose: a can too small or blurred to confirm
+is not counted, so on two Reels it reports 0.0 s and asks a person instead of failing the creator. Where it is wrong,
+and the comparison with the original app: [docs/ACCURACY.md](docs/ACCURACY.md). The whole run cost $0.63.
 
 ## What leaves your machine
 
