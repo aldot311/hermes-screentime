@@ -19,7 +19,18 @@ config_schema:
     env: META_MODEL_API_KEY
     required: false
     label: "Meta Model API key"
-    description: "Used only by Measure (SAM 3.1 tracking, Muse Spark product check, Voice Transcribe). Compare and the demo need no key."
+    description: "Optional. With it, Measure uses Meta's SAM 3.1 (every frame, most accurate), Muse Spark and Voice Transcribe. Without it, Measure runs on your own Hermes models. Compare and the demo need no key."
+  tracker:
+    type: str
+    choices: [auto, meta, hermes]
+    default: auto
+    label: "Tracker"
+    description: "auto: SAM 3.1 when a Meta key is set, otherwise your own Hermes vision model (task screentime_track). meta: always SAM 3.1. hermes: always your model."
+  frames_per_second:
+    type: int
+    default: 3
+    label: "Frames a second your model looks at"
+    description: "Only when your Hermes model tracks (1 to 5). More is finer timing and more calls: a 30 s video at 3 is 90 frames in 23 calls."
   verifier:
     type: str
     choices: [auto, meta, hermes]
@@ -30,7 +41,13 @@ config_schema:
     type: bool
     default: true
     label: "Listen for the brand name"
-    description: "Transcribe the audio with Muse Voice Transcribe (needs the Meta key) to check spoken mentions and disclosures."
+    description: "Check spoken mentions and ad disclosures: Muse Voice Transcribe when a Meta key is set, otherwise Hermes speech-to-text (stt in config.yaml)."
+  speech:
+    type: str
+    choices: [auto, meta, hermes]
+    default: auto
+    label: "Speech-to-text"
+    description: "auto: Muse Voice Transcribe when a Meta key is set, otherwise Hermes speech-to-text. meta or hermes: always that one."
   max_usd_per_video:
     type: float
     default: 0.5

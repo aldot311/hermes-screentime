@@ -624,3 +624,39 @@ def sha256_file(path: PathLike) -> str:
         for chunk in iter(lambda: fh.read(1 << 20), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def sample_frames(
+    video: PathLike,
+    out_dir: PathLike,
+    *,
+    every: int,
+    offset: int = 0,
+    max_side: Optional[int] = None,
+    timeout: Optional[float] = None,
+) -> list[tuple[int, Path]]:
+    """JPEGs of frames offset, offset+every, offset+2*every, ... of a normalized video, in one ffmpeg pass.
+    Returns [(frame index, path)] in frame order."""
+    if every < 1 or not 0 <= offset < every:
+        raise ValueError("need every >= 1 and 0 <= offset < every")
+    path = _absolute_file(video)
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    for old in out.glob("s_*.jpg"):
+        old.unlink()
+    vf = f"select='eq(mod(n\\,{int(every)})\\,{int(offset)})'"
+    if max_side is not None:
+        m = int(max_side)
+        vf += f",scale=w='if(gte(iw,ih),min(iw,{m}),-1)':h='if(gte(iw,ih),-1,min(ih,{m}))'"
+    argv = [
+        ffmpeg_bin(), "-nostdin", "-hide_banner", "-v", "error", "-y",
+        *input_args(path),
+        "-map", "0:V:0", "-an", "-sn", "-dn", "-vf", vf, "-fps_mode", "passthrough",
+        "-q:v", str(JPEG_QSCALE), "-c:v", "mjpeg", "-f", "image2", str(out / "s_%05d.jpg"),
+    ]
+    limit = timeout if timeout is not None else NORMALIZE_BASE_TIMEOUT_SEC
+    result = _run(argv, limit, what="ffmpeg (sample frames)")
+    if result.returncode != 0:
+        raise ScreentimeError("bad_input", f"Could not read the frames of {path.name}: {_tail(result.stderr)}")
+    files = sorted(out.glob("s_*.jpg"))
+    return [(offset + i * every, f) for i, f in enumerate(files)]

@@ -1,0 +1,735 @@
+{
+  "summary": {
+    "sam_alone": {
+      "precision": 0.9114707282246549,
+      "recall": 0.9917141377524599,
+      "f1": 0.9499007936507935
+    },
+    "with_check": {
+      "precision": 0.9494418910045962,
+      "recall": 0.7488348006214397,
+      "f1": 0.8372900984365953
+    },
+    "frames": {
+      "sam": {
+        "tp": 1915,
+        "fp": 186,
+        "fn": 16
+      },
+      "checked": {
+        "tp": 1446,
+        "fp": 77,
+        "fn": 485
+      }
+    },
+    "three_second_term": {
+      "right": 9,
+      "to_a_person": 1,
+      "wrong": 1
+    },
+    "usd_total": 0.0,
+    "reels": 11,
+    "engine": "openai:gpt-5.4-mini",
+    "fps": 3,
+    "tokens": {
+      "in": 230612,
+      "out": 53390,
+      "calls": 189
+    }
+  },
+  "rows": [
+    {
+      "reel": 1,
+      "builder_filmed": false,
+      "frames": 251,
+      "truth_sec": 11.2,
+      "sam_alone_sec": 16.0,
+      "checked_sec": 0.0,
+      "sam": {
+        "tp": 163,
+        "fp": 77,
+        "fn": 5
+      },
+      "checked": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 168
+      },
+      "objects": [
+        {
+          "object": 1,
+          "verdict": "unclear"
+        },
+        {
+          "object": 2,
+          "verdict": "unclear"
+        },
+        {
+          "object": 3,
+          "verdict": "unclear"
+        },
+        {
+          "object": 4,
+          "verdict": "unclear"
+        },
+        {
+          "object": 5,
+          "verdict": "unclear"
+        },
+        {
+          "object": 6,
+          "verdict": "unclear"
+        },
+        {
+          "object": 7,
+          "verdict": "unclear"
+        },
+        {
+          "object": 8,
+          "verdict": "unclear"
+        },
+        {
+          "object": 9,
+          "verdict": "unclear"
+        },
+        {
+          "object": 10,
+          "verdict": "unclear"
+        },
+        {
+          "object": 11,
+          "verdict": "unclear"
+        },
+        {
+          "object": 12,
+          "verdict": "unclear"
+        },
+        {
+          "object": 13,
+          "verdict": "unclear"
+        },
+        {
+          "object": 14,
+          "verdict": "unclear"
+        },
+        {
+          "object": 15,
+          "verdict": "unclear"
+        }
+      ],
+      "terms": [
+        {
+          "term": "On screen at least 3 seconds in total",
+          "passed": null
+        },
+        {
+          "term": "Says LaCroix out loud",
+          "passed": null
+        },
+        {
+          "term": "Discloses the ad: says it is an ad or sponsored",
+          "passed": null
+        }
+      ],
+      "usd": 0.0,
+      "seconds_to_run": 14.7,
+      "three_second_term": {
+        "expected": true,
+        "got": null,
+        "outcome": "to_a_person"
+      }
+    },
+    {
+      "reel": 2,
+      "builder_filmed": false,
+      "frames": 186,
+      "truth_sec": 2.6,
+      "sam_alone_sec": 3.67,
+      "checked_sec": 2.33,
+      "sam": {
+        "tp": 38,
+        "fp": 17,
+        "fn": 1
+      },
+      "checked": {
+        "tp": 33,
+        "fp": 2,
+        "fn": 6
+      },
+      "objects": [
+        {
+          "object": 1,
+          "verdict": "lookalike"
+        },
+        {
+          "object": 2,
+          "verdict": "match"
+        },
+        {
+          "object": 3,
+          "verdict": "unclear"
+        }
+      ],
+      "terms": [
+        {
+          "term": "On screen at least 3 seconds in total",
+          "passed": false
+        },
+        {
+          "term": "Says LaCroix out loud",
+          "passed": null
+        },
+        {
+          "term": "Discloses the ad: says it is an ad or sponsored",
+          "passed": null
+        }
+      ],
+      "usd": 0.0,
+      "seconds_to_run": 6.7,
+      "three_second_term": {
+        "expected": false,
+        "got": false,
+        "outcome": "right"
+      }
+    },
+    {
+      "reel": 3,
+      "builder_filmed": true,
+      "frames": 276,
+      "truth_sec": 0.0,
+      "sam_alone_sec": 4.33,
+      "checked_sec": 4.33,
+      "sam": {
+        "tp": 0,
+        "fp": 65,
+        "fn": 0
+      },
+      "checked": {
+        "tp": 0,
+        "fp": 65,
+        "fn": 0
+      },
+      "objects": [
+        {
+          "object": 1,
+          "verdict": "match"
+        },
+        {
+          "object": 2,
+          "verdict": "match"
+        }
+      ],
+      "terms": [
+        {
+          "term": "On screen at least 3 seconds in total",
+          "passed": true
+        },
+        {
+          "term": "Says LaCroix out loud",
+          "passed": null
+        },
+        {
+          "term": "Discloses the ad: says it is an ad or sponsored",
+          "passed": null
+        }
+      ],
+      "usd": 0.0,
+      "seconds_to_run": 7.5,
+      "three_second_term": {
+        "expected": false,
+        "got": true,
+        "outcome": "wrong"
+      }
+    },
+    {
+      "reel": 4,
+      "builder_filmed": false,
+      "frames": 180,
+      "truth_sec": 12.0,
+      "sam_alone_sec": 12.0,
+      "checked_sec": 10.67,
+      "sam": {
+        "tp": 180,
+        "fp": 0,
+        "fn": 0
+      },
+      "checked": {
+        "tp": 160,
+        "fp": 0,
+        "fn": 20
+      },
+      "objects": [
+        {
+          "object": 1,
+          "verdict": "match"
+        },
+        {
+          "object": 2,
+          "verdict": "unclear"
+        },
+        {
+          "object": 3,
+          "verdict": "match"
+        }
+      ],
+      "terms": [
+        {
+          "term": "On screen at least 3 seconds in total",
+          "passed": true
+        },
+        {
+          "term": "Says LaCroix out loud",
+          "passed": null
+        },
+        {
+          "term": "Discloses the ad: says it is an ad or sponsored",
+          "passed": null
+        }
+      ],
+      "usd": 0.0,
+      "seconds_to_run": 8.9,
+      "three_second_term": {
+        "expected": true,
+        "got": true,
+        "outcome": "right"
+      }
+    },
+    {
+      "reel": 5,
+      "builder_filmed": true,
+      "frames": 326,
+      "truth_sec": 21.33,
+      "sam_alone_sec": 21.67,
+      "checked_sec": 20.0,
+      "sam": {
+        "tp": 319,
+        "fp": 6,
+        "fn": 1
+      },
+      "checked": {
+        "tp": 300,
+        "fp": 0,
+        "fn": 20
+      },
+      "objects": [
+        {
+          "object": 1,
+          "verdict": "match"
+        },
+        {
+          "object": 2,
+          "verdict": "unclear"
+        },
+        {
+          "object": 3,
+          "verdict": "lookalike"
+        },
+        {
+          "object": 4,
+          "verdict": "match"
+        },
+        {
+          "object": 5,
+          "verdict": "match"
+        },
+        {
+          "object": 6,
+          "verdict": "unclear"
+        },
+        {
+          "object": 7,
+          "verdict": "match"
+        },
+        {
+          "object": 8,
+          "verdict": "match"
+        }
+      ],
+      "terms": [
+        {
+          "term": "On screen at least 3 seconds in total",
+          "passed": true
+        },
+        {
+          "term": "Says LaCroix out loud",
+          "passed": null
+        },
+        {
+          "term": "Discloses the ad: says it is an ad or sponsored",
+          "passed": null
+        }
+      ],
+      "usd": 0.0,
+      "seconds_to_run": 16.5,
+      "three_second_term": {
+        "expected": true,
+        "got": true,
+        "outcome": "right"
+      }
+    },
+    {
+      "reel": 6,
+      "builder_filmed": false,
+      "frames": 510,
+      "truth_sec": 14.0,
+      "sam_alone_sec": 14.33,
+      "checked_sec": 12.67,
+      "sam": {
+        "tp": 208,
+        "fp": 7,
+        "fn": 2
+      },
+      "checked": {
+        "tp": 185,
+        "fp": 5,
+        "fn": 25
+      },
+      "objects": [
+        {
+          "object": 1,
+          "verdict": "match"
+        },
+        {
+          "object": 2,
+          "verdict": "unclear"
+        },
+        {
+          "object": 3,
+          "verdict": "match"
+        },
+        {
+          "object": 4,
+          "verdict": "match"
+        },
+        {
+          "object": 5,
+          "verdict": "unclear"
+        }
+      ],
+      "terms": [
+        {
+          "term": "On screen at least 3 seconds in total",
+          "passed": true
+        },
+        {
+          "term": "Says LaCroix out loud",
+          "passed": null
+        },
+        {
+          "term": "Discloses the ad: says it is an ad or sponsored",
+          "passed": null
+        }
+      ],
+      "usd": 0.0,
+      "seconds_to_run": 16.1,
+      "three_second_term": {
+        "expected": true,
+        "got": true,
+        "outcome": "right"
+      }
+    },
+    {
+      "reel": 7,
+      "builder_filmed": false,
+      "frames": 182,
+      "truth_sec": 12.13,
+      "sam_alone_sec": 12.0,
+      "checked_sec": 5.33,
+      "sam": {
+        "tp": 180,
+        "fp": 0,
+        "fn": 2
+      },
+      "checked": {
+        "tp": 80,
+        "fp": 0,
+        "fn": 102
+      },
+      "objects": [
+        {
+          "object": 1,
+          "verdict": "unclear"
+        },
+        {
+          "object": 2,
+          "verdict": "unclear"
+        },
+        {
+          "object": 3,
+          "verdict": "match"
+        },
+        {
+          "object": 4,
+          "verdict": "unclear"
+        },
+        {
+          "object": 5,
+          "verdict": "match"
+        },
+        {
+          "object": 6,
+          "verdict": "unclear"
+        },
+        {
+          "object": 7,
+          "verdict": "match"
+        }
+      ],
+      "terms": [
+        {
+          "term": "On screen at least 3 seconds in total",
+          "passed": true
+        },
+        {
+          "term": "Says LaCroix out loud",
+          "passed": null
+        },
+        {
+          "term": "Discloses the ad: says it is an ad or sponsored",
+          "passed": null
+        }
+      ],
+      "usd": 0.0,
+      "seconds_to_run": 10.9,
+      "three_second_term": {
+        "expected": true,
+        "got": true,
+        "outcome": "right"
+      }
+    },
+    {
+      "reel": 8,
+      "builder_filmed": false,
+      "frames": 218,
+      "truth_sec": 13.73,
+      "sam_alone_sec": 14.53,
+      "checked_sec": 7.67,
+      "sam": {
+        "tp": 206,
+        "fp": 12,
+        "fn": 0
+      },
+      "checked": {
+        "tp": 112,
+        "fp": 3,
+        "fn": 94
+      },
+      "objects": [
+        {
+          "object": 1,
+          "verdict": "match"
+        },
+        {
+          "object": 2,
+          "verdict": "unclear"
+        },
+        {
+          "object": 3,
+          "verdict": "match"
+        },
+        {
+          "object": 4,
+          "verdict": "unclear"
+        },
+        {
+          "object": 5,
+          "verdict": "match"
+        },
+        {
+          "object": 6,
+          "verdict": "unclear"
+        },
+        {
+          "object": 7,
+          "verdict": "unclear"
+        },
+        {
+          "object": 8,
+          "verdict": "lookalike"
+        },
+        {
+          "object": 9,
+          "verdict": "unclear"
+        }
+      ],
+      "terms": [
+        {
+          "term": "On screen at least 3 seconds in total",
+          "passed": true
+        },
+        {
+          "term": "Says LaCroix out loud",
+          "passed": null
+        },
+        {
+          "term": "Discloses the ad: says it is an ad or sponsored",
+          "passed": null
+        }
+      ],
+      "usd": 0.0,
+      "seconds_to_run": 11.3,
+      "three_second_term": {
+        "expected": true,
+        "got": true,
+        "outcome": "right"
+      }
+    },
+    {
+      "reel": 9,
+      "builder_filmed": false,
+      "frames": 196,
+      "truth_sec": 11.87,
+      "sam_alone_sec": 11.67,
+      "checked_sec": 11.67,
+      "sam": {
+        "tp": 175,
+        "fp": 0,
+        "fn": 3
+      },
+      "checked": {
+        "tp": 175,
+        "fp": 0,
+        "fn": 3
+      },
+      "objects": [
+        {
+          "object": 1,
+          "verdict": "match"
+        }
+      ],
+      "terms": [
+        {
+          "term": "On screen at least 3 seconds in total",
+          "passed": true
+        },
+        {
+          "term": "Says LaCroix out loud",
+          "passed": null
+        },
+        {
+          "term": "Discloses the ad: says it is an ad or sponsored",
+          "passed": null
+        }
+      ],
+      "usd": 0.0,
+      "seconds_to_run": 8.0,
+      "three_second_term": {
+        "expected": true,
+        "got": true,
+        "outcome": "right"
+      }
+    },
+    {
+      "reel": 10,
+      "builder_filmed": false,
+      "frames": 227,
+      "truth_sec": 13.33,
+      "sam_alone_sec": 13.33,
+      "checked_sec": 10.33,
+      "sam": {
+        "tp": 198,
+        "fp": 2,
+        "fn": 2
+      },
+      "checked": {
+        "tp": 153,
+        "fp": 2,
+        "fn": 47
+      },
+      "objects": [
+        {
+          "object": 1,
+          "verdict": "match"
+        },
+        {
+          "object": 2,
+          "verdict": "unclear"
+        },
+        {
+          "object": 3,
+          "verdict": "match"
+        },
+        {
+          "object": 4,
+          "verdict": "unclear"
+        },
+        {
+          "object": 5,
+          "verdict": "match"
+        },
+        {
+          "object": 6,
+          "verdict": "unclear"
+        }
+      ],
+      "terms": [
+        {
+          "term": "On screen at least 3 seconds in total",
+          "passed": true
+        },
+        {
+          "term": "Says LaCroix out loud",
+          "passed": null
+        },
+        {
+          "term": "Discloses the ad: says it is an ad or sponsored",
+          "passed": null
+        }
+      ],
+      "usd": 0.0,
+      "seconds_to_run": 11.6,
+      "three_second_term": {
+        "expected": true,
+        "got": true,
+        "outcome": "right"
+      }
+    },
+    {
+      "reel": 11,
+      "builder_filmed": false,
+      "frames": 248,
+      "truth_sec": 16.53,
+      "sam_alone_sec": 16.53,
+      "checked_sec": 16.53,
+      "sam": {
+        "tp": 248,
+        "fp": 0,
+        "fn": 0
+      },
+      "checked": {
+        "tp": 248,
+        "fp": 0,
+        "fn": 0
+      },
+      "objects": [
+        {
+          "object": 1,
+          "verdict": "match"
+        }
+      ],
+      "terms": [
+        {
+          "term": "On screen at least 3 seconds in total",
+          "passed": true
+        },
+        {
+          "term": "Says LaCroix out loud",
+          "passed": null
+        },
+        {
+          "term": "Discloses the ad: says it is an ad or sponsored",
+          "passed": null
+        }
+      ],
+      "usd": 0.0,
+      "seconds_to_run": 8.4,
+      "three_second_term": {
+        "expected": true,
+        "got": true,
+        "outcome": "right"
+      }
+    }
+  ],
+  "product": "a pink LaCroix Strawberry Peach sparkling water can: blue 'LaCroix' script over a yellow peach, red and yellow hearts, strawberries and green stripes near the base",
+  "photo": "fixtures/demo/product.jpg"
+}

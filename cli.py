@@ -12,7 +12,7 @@ def setup(subparser: Any) -> None:
     subs.add_parser("selftest", help="Cut detector on a generated clip + the bundled demo pipeline (no key, no network)")
     d = subs.add_parser("demo", help="Measure on the bundled clip (recorded API run, no key, no cost)")
     d.add_argument("--json", action="store_true")
-    m = subs.add_parser("measure", help="Measure a product's seconds on screen (needs the Meta key)")
+    m = subs.add_parser("measure", help="Measure a product's seconds on screen (Meta key or your own Hermes models)")
     m.add_argument("video")
     m.add_argument("--product", required=True)
     m.add_argument("--noun", required=True, help="plain object noun, e.g. 'drink can'")

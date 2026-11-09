@@ -43,13 +43,14 @@ MEASURE = {
     "name": "screentime_measure",
     "description": (
         "Measure how long a specific product is on screen in a video file, frame by frame (15 fps), and prove it. "
-        "Tracks every object of the given kind with Meta SAM 3.1, checks each one against the product description "
+        "Tracks every object of the given kind (Meta SAM 3.1 with a Meta key, otherwise the user's own Hermes vision "
+        "model on sampled frames), checks each one against the product description "
         "and photo so look-alikes (another flavour, another brand) are NOT counted, optionally listens for the brand "
         "name, checks contract terms as typed rules, and renders a proof reel. Use it for questions like 'how long is "
         "my product on screen', 'did the sponsor get 3 seconds', 'check this reel against the brief'. It returns "
-        "measured numbers; never estimate on-screen time yourself. Costs about $0.003 per second of video plus about "
-        "$0.02 per checked object on the user's Meta key (spend caps are enforced); without a key it explains how to "
-        "add one and suggests /screentime demo. Takes 30-90 s for a short reel."
+        "measured numbers; never estimate on-screen time yourself. With a Meta key it costs about $0.003 per second of "
+        "video plus about $0.02 per checked object (spend caps are enforced); without one it runs on the user's own "
+        "Hermes models and says which. Takes 30-120 s for a short reel."
     ),
     "parameters": {
         "type": "object",

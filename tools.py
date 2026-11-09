@@ -68,27 +68,47 @@ def terms_from_args(items: Optional[list]) -> list[ContractTerm]:
 
 
 def _engines(require_key: bool = True):
+    """Pick the engines from the settings. With a Meta key, auto means SAM 3.1 + Muse Spark + Voice Transcribe; without
+    one, auto means the user's own Hermes models (vision for tracking and the check, Hermes speech-to-text)."""
     from .screentime_core.meta_client import MetaClient
     from .screentime_core.pipeline import Engines
     from .screentime_core.verify import HermesLlmVerifier, MetaSparkVerifier
+    from .screentime_core.vision_track import VisionTracker
 
     key = hb.meta_key()
     client = MetaClient(key) if key else None
-    mode = str(hb.setting("verifier", "auto")).lower()
-    if mode == "meta" and client is None:
-        raise ScreentimeError("engine_unavailable", "The product check is set to Muse Spark, but no Meta key is set.",
-                              fix="Add the key in Settings > Plugins > screentime, or set Product check to auto.")
-    if mode == "meta" or (mode == "auto" and client is not None):
-        verifier = MetaSparkVerifier(client)
+    no_key_fix = "Add the key in Settings > Plugins > screentime, or set this to auto or hermes."
+
+    def choice(name: str) -> str:
+        v = str(hb.setting(name, "auto")).lower()
+        return v if v in ("auto", "meta", "hermes") else "auto"
+
+    track, check, speech = choice("tracker"), choice("verifier"), choice("speech")
+    for name, v in (("Tracker", track), ("Product check", check), ("Speech-to-text", speech)):
+        if v == "meta" and client is None:
+            raise ScreentimeError("engine_unavailable", f"{name} is set to Meta, but no Meta key is set.", fix=no_key_fix)
+    use_meta = {k: v == "meta" or (v == "auto" and client is not None)
+                for k, v in (("track", track), ("check", check), ("speech", speech))}
+
+    verifier = MetaSparkVerifier(client) if use_meta["check"] else HermesLlmVerifier(hb.hermes_structured_call())
+    listen = bool(hb.setting("listen", True))
+    stt, stt_label = (None, "")
+    if listen and not use_meta["speech"]:
+        stt, stt_label = hb.hermes_stt()
+    if use_meta["track"]:
+        tracker, vision = "meta", None
     else:
-        verifier = HermesLlmVerifier(hb.hermes_structured_call())
-    if require_key and client is None:
-        raise ScreentimeError(
-            "engine_unavailable",
-            "Measure needs a Meta Model API key to track the product (SAM 3.1).",
-            fix="Paste it in Settings > Plugins > screentime > Meta Model API key (stored by Hermes, never in config.yaml).",
-        )
-    return Engines("meta", verifier, client, transcribe=bool(client) and bool(hb.setting("listen", True)))
+        tracker = "vision"
+        try:
+            fps = int(hb.setting("frames_per_second", 3))
+        except (TypeError, ValueError):
+            fps = 3
+        vision = VisionTracker(hb.hermes_structured_call(hb.TRACK_TASK, "screentime tracking", 1500), fps)
+    if require_key and tracker == "meta" and client is None:
+        raise ScreentimeError("engine_unavailable", "Measure needs a Meta Model API key for SAM 3.1.", fix=no_key_fix)
+    off = "" if (not listen or use_meta["speech"] or stt) else stt_label
+    return Engines(tracker, verifier, client, transcribe=listen and use_meta["speech"], vision=vision,
+                   stt=stt, stt_label=stt_label if stt else "hermes-stt", speech_off_reason=off)
 
 
 def _measure_payload(report, summary: str) -> dict:

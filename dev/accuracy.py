@@ -30,7 +30,61 @@ from screentime_core.models import (  # noqa: E402
 )
 from screentime_core.pipeline import Engines, MeasureRequest, run_measure  # noqa: E402
 from screentime_core.rules import validate_rule  # noqa: E402
-from screentime_core.verify import MetaSparkVerifier  # noqa: E402
+from screentime_core.verify import HermesLlmVerifier, MetaSparkVerifier  # noqa: E402
+from screentime_core.vision_track import VisionTracker  # noqa: E402
+
+OPENAI_COMPAT = {
+    "gemini": ("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", "GEMINI_API_KEY"),
+    "openai": ("https://api.openai.com/v1/chat/completions", "OPENAI_API_KEY"),
+}
+TOKENS = {"in": 0, "out": 0, "calls": 0}
+EXTRA: dict = {}
+
+
+def compat_llm(vendor: str, model: str):
+    """A stand-in for Hermes's ctx.llm.complete_structured: one OpenAI-compatible chat call with images and a strict
+    JSON schema. Used only to measure the any-model path without a running Hermes."""
+    import base64
+    import threading
+
+    import httpx
+
+    url, env = OPENAI_COMPAT[vendor]
+    key = os.environ.get(env, "")
+    if not key:
+        sys.exit(f"{env} missing (run through ~/ai/bin/with-secrets.sh)")
+    lock = threading.Lock()
+
+    import hashlib
+
+    cache = Path(tempfile.gettempdir()) / "screentime-llm-cache" / model
+    cache.mkdir(parents=True, exist_ok=True)
+
+    def call(instructions, images, schema, name):
+        h = hashlib.sha256(instructions.encode() + b"".join(b for b, _ in images)).hexdigest()
+        hit = cache / f"{h}.json"
+        if hit.exists():
+            return json.loads(hit.read_text())
+        content = [{"type": "text", "text": instructions}] + [
+            {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{base64.b64encode(b).decode()}"}}
+            for b, mime in images]
+        body = {"model": model, "messages": [{"role": "user", "content": content}], **EXTRA,
+                "response_format": {"type": "json_schema", "json_schema": {"name": name, "schema": schema, "strict": True}}}
+        r = httpx.post(url, json=body, headers={"Authorization": f"Bearer {key}"}, timeout=120)
+        r.raise_for_status()
+        data = r.json()
+        u = data.get("usage") or {}
+        with lock:
+            TOKENS["in"] += int(u.get("prompt_tokens") or 0)
+            TOKENS["out"] += int(u.get("completion_tokens") or 0)
+            TOKENS["calls"] += 1
+        text = data["choices"][0]["message"]["content"] or ""
+        text = text.strip().removeprefix("```json").removesuffix("```").strip()
+        out = {"parsed": json.loads(text), "text": text, "provider": vendor, "model": model, "usd": None}
+        hit.write_text(json.dumps(out))
+        return out
+
+    return call
 
 PRODUCT = (
     "a pink LaCroix Strawberry Peach sparkling water can: blue 'LaCroix' script over a yellow peach, red and yellow "
@@ -68,17 +122,28 @@ def main() -> None:
     ap.add_argument("--photo", default=str(Path(__file__).resolve().parents[1] / "fixtures" / "demo" / "product.jpg"))
     ap.add_argument("--out", default="docs/accuracy.json")
     ap.add_argument("--max-usd", type=float, default=2.5)
+    ap.add_argument("--model", default="", help="vendor:model (gemini:gemini-3.8-flash) to track AND check with "
+                    "that model instead of Meta; speech is not checked in this mode")
+    ap.add_argument("--fps", type=int, default=3)
+    ap.add_argument("--reasoning", default="", help="reasoning_effort for the compat call (e.g. low), default: model's")
+    ap.add_argument("--only", type=int, default=0, help="run only reel N (1-based)")
     args = ap.parse_args()
-    key = os.environ.get("META_MODEL_API_KEY", "")
-    if not key:
-        sys.exit("META_MODEL_API_KEY missing (run through ~/ai/bin/with-secrets.sh)")
-    client = MetaClient(key)
+    if args.reasoning:
+        EXTRA["reasoning_effort"] = args.reasoning
+    client = None
+    if not args.model:
+        key = os.environ.get("META_MODEL_API_KEY", "")
+        if not key:
+            sys.exit("META_MODEL_API_KEY missing (run through ~/ai/bin/with-secrets.sh)")
+        client = MetaClient(key)
     labels = sorted(p for p in Path(args.labels).glob("*.json") if p.name not in ("objects.json", "checklist.json"))
     db = sqlite3.connect(Path(tempfile.gettempdir()) / "screentime-accuracy-budget.db")
     budget = Budget(db, per_video_usd=0.6, per_day_usd=args.max_usd)
     rows, totals = [], {"sam": {"tp": 0, "fp": 0, "fn": 0}, "checked": {"tp": 0, "fp": 0, "fn": 0}}
     usd_total = 0.0
     for n, lp in enumerate(labels, 1):
+        if args.only and n != args.only:
+            continue
         lab = json.loads(lp.read_text())
         clip = lab["id"].split("/")[-1]
         video = Path(args.videos) / f"{clip}.mp4"
@@ -87,7 +152,12 @@ def main() -> None:
         terms = [ContractTerm(t, r if validate_rule(r)[0] else None) for t, r in TERMS]
         req = MeasureRequest(str(video), PRODUCT, "drink can", photo_path=args.photo, brand_names=["LaCroix", "La Croix"],
                              terms=terms)
-        eng = Engines("meta", MetaSparkVerifier(client), client, transcribe=True)
+        if args.model:
+            vendor, model = args.model.split(":", 1)
+            llm = compat_llm(vendor, model)
+            eng = Engines("vision", HermesLlmVerifier(llm), None, vision=VisionTracker(llm, args.fps))
+        else:
+            eng = Engines("meta", MetaSparkVerifier(client), client, transcribe=True)
         t0 = time.monotonic()
         with tempfile.TemporaryDirectory() as tmp:
             rep = run_measure(req, eng, workdir=Path(tmp) / "w", outdir=Path(tmp) / "o", budget=budget,
@@ -124,7 +194,8 @@ def main() -> None:
         decisions[key] += 1
         row["three_second_term"] = {"expected": want, "got": got, "outcome": key}
     summary = {"sam_alone": prf(totals["sam"]), "with_check": prf(totals["checked"]), "frames": totals,
-               "three_second_term": decisions, "usd_total": round(usd_total, 4), "reels": len(rows)}
+               "three_second_term": decisions, "usd_total": round(usd_total, 4), "reels": len(rows),
+               "engine": args.model or "meta", "fps": args.fps if args.model else 15, "tokens": TOKENS}
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     Path(args.out).write_text(json.dumps({"summary": summary, "rows": rows, "product": PRODUCT,
                                           "photo": "fixtures/demo/product.jpg"}, indent=2, default=str))

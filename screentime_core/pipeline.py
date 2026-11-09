@@ -94,11 +94,15 @@ class MeasureRequest:
 
 @dataclass
 class Engines:
-    tracker: str  # "meta" | "replay"
+    tracker: str  # "meta" | "vision" | "replay"
     verifier: Verifier
-    client: Any = None  # MetaClient when tracker == "meta" or when transcribing
-    transcribe: bool = False
+    client: Any = None  # MetaClient when tracker == "meta" or when transcribing with Meta
+    transcribe: bool = False  # listen with Muse Voice Transcribe (needs client)
     replay: Optional[ReplayData] = None
+    vision: Any = None  # VisionTracker when tracker == "vision"
+    stt: Optional[Callable[[str], dict]] = None  # Hermes speech-to-text: wav path -> {"success", "transcript", "provider"}
+    stt_label: str = "hermes-stt"
+    speech_off_reason: str = ""  # why speech is not checked this run (shown as a note when the video has audio)
 
 
 def _now_iso() -> str:
@@ -190,6 +194,15 @@ def run_measure(
         calls.append(ReceiptCall("replay:sam-3.1", f'Track "{rp.sam_prompt}" (recorded {rp.sam_meta.get("recorded_at", "")})',
                                  f"{info.frame_count} frames", "recorded output", 0, 0.0, replayed=True))
         sam_prompt = rp.sam_prompt
+    elif engines.tracker == "vision":
+        if engines.vision is None:
+            raise ScreentimeError("engine_unavailable", "No model is set up to track the product.",
+                                  fix="Set a vision-capable model in Hermes, or add a Meta Model API key.")
+        vt = engines.vision.track(str(norm), info, sam_prompt, workdir,
+                                  progress=lambda done, total: say("tracking", {"calls_done": done, "calls": total}))
+        calls.append(vt.call)
+        notes.extend(vt.notes)
+        sam_text = None
     else:
         if engines.client is None:
             raise ScreentimeError("engine_unavailable", "Measure needs a Meta Model API key to track the product.",
@@ -221,7 +234,7 @@ def run_measure(
         sam_text = sam.text
         calls.append(ReceiptCall("sam-3.1", f'Track "{sam_prompt}"', f"{info.frame_count} frames at {FPS} fps",
                                  f"{sam.frames_billed} frames billed", int(sam.ms), float(sam.usd)))
-    detections = sam_mod.parse_sam_text(sam_text, info.width, info.height)
+    detections = sam_mod.parse_sam_text(sam_text, info.width, info.height) if sam_text is not None else vt.detections
     tracks = sam_mod.group_tracks(detections)
     say("tracked", {"objects": len(tracks)})
 
@@ -301,9 +314,26 @@ def run_measure(
                     budget.release(res)
                 spoken_checked = False
                 notes.append(f"Speech was not checked: {exc.message}")
+    elif engines.stt is not None and info.has_audio:
+        say("listening", {})
+        wav = workdir / f"{run_id}.wav"
+        if media.extract_audio_wav(str(src), str(wav)):
+            t0 = time.monotonic()
+            turns, why = listen_in_windows(engines.stt, wav, workdir / "speech")
+            if turns is None:
+                spoken_checked = False
+                notes.append(f"Speech was not checked: {why}")
+            else:
+                calls.append(ReceiptCall(engines.stt_label, "Listen for the brand",
+                                         f"{original.duration_sec:.1f} s of audio in {WINDOW_SEC:.0f} s windows",
+                                         f"{len(turns)} windows with speech", int((time.monotonic() - t0) * 1000), 0.0))
+    if turns is None and info.has_audio and engines.speech_off_reason and spoken_checked is None:
+        notes.append(f"Speech was not checked: {engines.speech_off_reason}")
     if turns is not None:
         mentions = mentions_mod.find_mentions(turns, brand_names) if brand_names else []
         disclosures = mentions_mod.find_spoken_disclosures(turns)
+        if engines.stt is not None and not engines.transcribe and engines.tracker != "replay":
+            mentions, disclosures = dedupe_mentions(mentions), dedupe_mentions(disclosures)
         spoken_checked = True if brand_names else spoken_checked
     elif not info.has_audio:
         spoken_checked = None
@@ -318,10 +348,15 @@ def run_measure(
                                          spoken_checked=spoken_checked)
         terms = open_for_unchecked(terms, rules_mod.evaluate(req.terms, if_counted, info, disclosure), len(unchecked_ids))
 
+    tracker_label = vt.label if engines.tracker == "vision" else "sam-3.1"
+    if engines.tracker == "replay" or engines.transcribe:
+        listen_label = "muse-voice-transcribe-1.0"
+    else:
+        listen_label = engines.stt_label
     attempts = [PromptAttempt(sam_prompt, len(tracks), len(counted), info.frame_count)]
     if not tracks:
         notes.append(
-            f'SAM 3.1 found no object for "{sam_prompt}". Try a plainer one-to-three word noun for the object\'s shape, '
+            f'{"Your model" if engines.tracker == "vision" else "SAM 3.1"} found no object for "{sam_prompt}". Try a plainer one-to-three word noun for the object\'s shape, '
             f"for example: {', '.join(n for n in NOUN_SUGGESTIONS if n not in sam_prompt)[:80]}."
         )
 
@@ -344,8 +379,8 @@ def run_measure(
         disclosure=disclosure,
         prompt_attempts=attempts,
         receipt=RunReceipt(run_id, started, FPS,
-                           {"sam": "sam-3.1", "check": getattr(engines.verifier, "name", "none"),
-                            "transcribe": "muse-voice-transcribe-1.0" if turns is not None else "none"},
+                           {"sam": tracker_label, "check": getattr(engines.verifier, "name", "none"),
+                            "transcribe": listen_label if turns is not None else "none"},
                            calls),
         notes=notes,
     )
@@ -364,6 +399,66 @@ def run_measure(
             report.notes.append(f"The proof reel could not be made: {exc.message}")
     say("done", {"seconds_on_screen": metrics.seconds_on_screen})
     return report
+
+
+WINDOW_SEC = 5.0
+STRIDE_SEC = 4.0  # windows overlap by 1 s so a word on a boundary is heard whole in one of them
+MAX_WINDOWS = 40
+
+
+def listen_in_windows(stt: Callable[[str], dict], wav: Path, outdir: Path) -> tuple[Optional[list[dict]], str]:
+    """Hermes speech-to-text returns text without timestamps, so the audio goes in short overlapping windows and each
+    window becomes one turn with its own times. Returns (turns, "") or (None, why)."""
+    import wave
+
+    outdir.mkdir(parents=True, exist_ok=True)
+    with wave.open(str(wav), "rb") as w:
+        rate, width, channels, total = w.getframerate(), w.getsampwidth(), w.getnchannels(), w.getnframes()
+        pcm = w.readframes(total)
+    dur = total / float(rate)
+    starts = []
+    t = 0.0
+    while t < dur and len(starts) < MAX_WINDOWS:
+        starts.append(t)
+        if t + WINDOW_SEC >= dur:
+            break
+        t += STRIDE_SEC
+    turns: list[dict] = []
+    errors: list[str] = []
+    frame_bytes = width * channels
+    for i, start in enumerate(starts):
+        end = min(dur, start + WINDOW_SEC)
+        if end - start < 0.3:
+            continue
+        part = outdir / f"w{i:03d}.wav"
+        with wave.open(str(part), "wb") as out:
+            out.setnchannels(channels)
+            out.setsampwidth(width)
+            out.setframerate(rate)
+            out.writeframes(pcm[int(start * rate) * frame_bytes:int(end * rate) * frame_bytes])
+        try:
+            res = stt(str(part)) or {}
+        except Exception as exc:  # the host's STT failing is a note, not a failed run
+            res = {"success": False, "error": type(exc).__name__}
+        if not res.get("success"):
+            errors.append(str(res.get("error") or "no transcript"))
+            continue
+        text = " ".join(str(res.get("transcript") or "").split())
+        if text:
+            turns.append({"start_sec": round(start, 2), "end_sec": round(end, 2), "text": text})
+    if errors and len(errors) == len(starts):
+        return None, f"Hermes speech-to-text did not answer ({errors[0][:120]})."
+    return turns, ""
+
+
+def dedupe_mentions(items: list, gap_sec: float = 1.5) -> list:
+    """Overlapping windows hear a word twice; keep the first of any two hits closer than gap_sec."""
+    out: list = []
+    for m in sorted(items, key=lambda m: m.start_sec):
+        if out and m.start_sec - out[-1].start_sec < gap_sec:
+            continue
+        out.append(m)
+    return out
 
 
 def open_for_unchecked(results: list[TermResult], if_counted: list[TermResult], objects: int) -> list[TermResult]:

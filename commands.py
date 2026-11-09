@@ -24,7 +24,8 @@ Commands:
   /screentime selftest  check ffmpeg, the cut detector on a generated clip, and the bundled demo
   /screentime status    key, product check, spend today
   /screentime last      your latest result
-Measure uses your Meta Model API key (Settings > Plugins > screentime). Compare needs no key."""
+Measure uses Meta's SAM 3.1 when a Meta Model API key is set (Settings > Plugins > screentime), otherwise your own
+Hermes vision model and speech-to-text. Compare needs no model at all."""
 
 
 def _media_line(path: str, platform: str) -> str:
@@ -61,7 +62,7 @@ def run_demo(owner: str = "local", *, render: bool = True):
 def _status() -> str:
     from .screentime_core.budget import Budget
 
-    key = "set" if hb.meta_key() else "not set (Measure needs it; Compare and the demo do not)"
+    key = "set" if hb.meta_key() else "not set (Measure runs on your own Hermes models)"
     ff = shutil.which("ffmpeg") or "NOT FOUND (install ffmpeg)"
     try:
         spent = Budget(hb.db(), per_video_usd=hb.setting("max_usd_per_video", 0.5),
@@ -69,7 +70,8 @@ def _status() -> str:
     except Exception:
         spent = 0.0
     return (
-        f"Meta key: {key}\nffmpeg: {ff}\nProduct check: {hb.setting('verifier', 'auto')}\n"
+        f"Meta key: {key}\nffmpeg: {ff}\nTracker: {hb.setting('tracker', 'auto')}\n"
+        f"Product check: {hb.setting('verifier', 'auto')}\nSpeech-to-text: {hb.setting('speech', 'auto')}\n"
         f"Spent today: ${spent:.3f} of ${hb.setting('max_usd_per_day', 5.0):.2f} (cap per video "
         f"${hb.setting('max_usd_per_video', 0.5):.2f})"
     )

@@ -27,8 +27,9 @@ Three tools. All numbers come from the tools; never estimate on-screen time, cut
     disclosure must appear -> uncheckable (it is reported for a person)
 - Reply with the numbers exactly as returned, each term's result with its time, the rejected look-alikes and why, and
   the `media_tag` line on its own line so the proof reel is attached.
-- Cost: about $0.003 per second of video plus about $0.02 per checked object on the user's Meta key; caps are
-  enforced by the plugin. Without a key, offer `/screentime demo`.
+- Engines: with a Meta key, SAM 3.1 tracks every frame (about $0.003 per second of video plus about $0.02 per checked
+  object; caps are enforced by the plugin). Without one, the user's own Hermes vision model tracks sampled frames and
+  Hermes speech-to-text listens; say so when you reply, using the report's notes. `/screentime demo` needs neither.
 
 ## screentime_compare: "compare my draft with this reel"
 - `video` is the user's draft; `reference` the take they are comparing against. Free, local, ffmpeg only.

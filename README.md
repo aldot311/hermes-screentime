@@ -1,7 +1,7 @@
 # Screen-Time for Hermes
 
 **Ask Hermes how long your product is on screen in a video. Get the seconds, each contract term checked against the
-frames that prove it, and a proof reel back in the chat.**
+frames that prove it, and a proof reel back in the chat. Runs on the models your Hermes already has.**
 
 Brands pay creators for screen time. Screen-Time measures it: it tracks every object of the right kind through every
 frame of the video (15 frames a second), checks each one against the product so a different flavour or a rival can is
@@ -43,18 +43,28 @@ Hermes calls `screentime_measure` and replies with:
 - each term as PASS, FAIL or NEEDS A PERSON, with the moment that proves it
 - a proof reel: the video with a lime box on what counted, a dashed red box on what did not, and a timeline strip
 
-How it works: ffmpeg normalizes the video to 15 fps, so a frame number divided by 15 is an exact second. Meta's SAM 3.1
-tracks every object matching a plain noun ("drink can") with a box and a mask per frame. Muse Spark looks at crops of
-each tracked object next to the product photo and decides: match, look-alike or unclear. Only matches count. Muse Voice
-Transcribe listens for the brand name. The terms are checked by code, not by a model.
+How it works: ffmpeg normalizes the video to 15 fps, so a frame number divided by 15 is an exact second. A tracker
+finds every object matching a plain noun ("drink can"). A vision model looks at crops of each tracked object next to the
+product photo and decides: match, look-alike or unclear. Only matches count. A speech-to-text model listens for the
+brand name. The terms are checked by code, not by a model.
 
-Measure uses your own Meta Model API key: paste it in Settings > Plugins > screentime (Hermes stores it; it never goes
-in config.yaml). It costs about $0.003 per second of video for tracking plus about $0.02 per checked object. The plugin
-reserves each call's cost before making it and refuses to pass your caps (defaults: $0.50 per video, $5 per day).
+### Any model, or Meta's
 
-Without a Meta key, the product check can run on your own Hermes vision model instead (set the `screentime_verify`
-task, which inherits your vision model by default). Reports say which model checked the objects and whether that
-configuration was validated.
+Measure runs on whatever models your Hermes already has. No extra key is needed.
+
+| Step | With your own Hermes models (no extra key) | With a Meta Model API key |
+|---|---|---|
+| Track | your vision model boxes the noun in 3 frames a second (task `screentime_track`) | SAM 3.1: a box and a mask in every frame |
+| Check each object | your vision model (task `screentime_verify`) | Muse Spark |
+| Listen | Hermes speech-to-text (`stt` in config.yaml), in 5 s windows | Muse Voice Transcribe |
+| Cost | your provider's usual price per call | about $0.003 per second of video + about $0.02 per checked object |
+
+Both tasks inherit your vision model and default to low reasoning; point them at a different model in
+`auxiliary.screentime_track` / `auxiliary.screentime_verify`. Each report names the models that did the work. With a
+Meta key, `auto` (the default for Tracker, Product check and Speech-to-text) picks Meta; set any of them to `hermes`
+or `meta` in Settings > Plugins > screentime. Paste the key there too (Hermes stores it; it never goes in
+config.yaml). The plugin reserves each Meta call's cost before making it and refuses to pass your caps (defaults: $0.50
+per video, $5 per day).
 
 ## Compare
 
@@ -71,21 +81,23 @@ It measures; it does not predict. There is no score, no retention curve and no "
 
 Measured with the plugin itself on 11 human-labelled test Reels (2,800 frames at 15 fps), frame by frame:
 
-| | Precision | Recall | F1 |
-|---|---|---|---|
-| SAM 3.1 alone | 95.0% | 99.6% | 97.2% |
-| With the product check | **98.1%** | **81.7%** | 89.1% |
+| Models (tracker + product check) | Precision | Recall | F1 | 3-second term right |
+|---|---|---|---|---|
+| Gemini 3.8 Flash, no Meta key | **99.4%** | **93.1%** | **96.1%** | 11 of 11 |
+| SAM 3.1 + Muse Spark (Meta key) | 98.1% | 81.7% | 89.1% | 8 (2 to a person, 1 wrong) |
+| GPT-5.4 mini, no Meta key | 94.9% | 74.9% | 83.7% | 9 (1 to a person, 1 wrong) |
 
-On the Reel with only a look-alike can, SAM alone counts 4.3 s and Screen-Time counts 0.0 s. The 3-second term was
-right on 8 Reels, sent to a person on 2 and wrong on 1. It is cautious on purpose: a can too small or blurred to confirm
-is not counted, so on two Reels it reports 0.0 s and asks a person instead of failing the creator. Where it is wrong,
-and the comparison with the original app: [docs/ACCURACY.md](docs/ACCURACY.md). The whole run cost $0.63.
+The model matters most in the product check. Gemini and Muse Spark both count 0.0 s on the Reel that shows only a
+look-alike can (a tracker alone counts 4.3 to 5.3 s there); GPT-5.4 mini counted the look-alike. Small or blurred cans
+are reported as unclear and never counted, so seconds are a floor. Per-Reel numbers and where each one is wrong:
+[docs/ACCURACY.md](docs/ACCURACY.md).
 
 ## What leaves your machine
 
-- Measure only, with your key: the normalized video (uploaded to Meta's Files API with a one-hour expiry and deleted
+- Measure with a Meta key: the normalized video (uploaded to Meta's Files API with a one-hour expiry and deleted
   after the run), crops of tracked objects and the product photo (Muse Spark), and the audio (Voice Transcribe).
-- When the product check uses your Hermes model, the crops go to that model's provider.
+- Measure with your own Hermes models: sampled frames (640 px), crops and the product photo go to your vision model's
+  provider, and 5-second audio clips to your speech-to-text provider (nothing leaves the machine if both are local).
 - Compare and the demo make no network calls.
 - The plugin runs ffmpeg and ffprobe on the files you name, reads only files under your session folder, your home
   folder or Hermes's home, keeps its run index in Hermes's plugin data folder and writes proof reels and cards to

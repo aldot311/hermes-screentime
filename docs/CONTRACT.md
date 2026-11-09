@@ -36,6 +36,7 @@ rate_limited (429), server (5xx), timeout, refused, incomplete, budget, verifier
 | teardown.py, card.py | agent TEARDOWN | analyze(video, workdir, ...) -> TeardownReport; compare(yours, theirs) -> CompareReport; render cards (Pillow) |
 | proof.py | agent PROOF | render_proof(video, detections, verdict_by_object, metrics, info, out_mp4, ...) -> str |
 | verify.py, budget.py, store.py, pipeline.py | lead | look-alike check, spend caps, run index, Measure orchestration |
+| vision_track.py | lead | VisionTracker(llm, samples_per_sec=3).track(video, info, noun, workdir) -> VisionTrackResult: any vision model boxes the noun in sampled frames (no Meta key); media.sample_frames; pipeline.listen_in_windows for Hermes speech-to-text |
 
 ## Test data on this machine (read-only, never committed except where a task says so)
 - 11 LaCroix test Reels: ~/Projects/aetrai/screen-time/data/videos/lacroix/*.mp4

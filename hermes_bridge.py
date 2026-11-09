@@ -15,18 +15,21 @@ log = logging.getLogger(__name__)
 
 PLUGIN_ID = "screentime"
 AUX_TASK = "screentime_verify"
+TRACK_TASK = "screentime_track"
 KEY_ENVS = ("META_MODEL_API_KEY", "MODEL_API_KEY", "META_API_KEY")  # same names Hermes's meta-ai provider reads
 PLUGIN_DIR = Path(__file__).resolve().parent
 DEMO_DIR = PLUGIN_DIR / "fixtures" / "demo"
 
 _CTX: Any = None
 _AUX_REGISTERED = False
+_AUX_TASKS: frozenset[str] = frozenset()
 
 
-def bind(ctx: Any, *, aux_registered: bool) -> None:
-    global _CTX, _AUX_REGISTERED
+def bind(ctx: Any, *, aux_registered: bool, aux_tasks: Any = None) -> None:
+    global _CTX, _AUX_REGISTERED, _AUX_TASKS
     _CTX = ctx
     _AUX_REGISTERED = aux_registered
+    _AUX_TASKS = frozenset(aux_tasks or ({AUX_TASK} if aux_registered else set()))
 
 
 def data_dir() -> Path:
@@ -148,8 +151,9 @@ def owner_key(session_key: str = "") -> Optional[str]:
     return None if platform and platform not in ("cli", "local") else "local"
 
 
-def hermes_structured_call():
-    """A callable for HermesLlmVerifier: the user's model (or the screentime_verify aux model) with image blocks."""
+def hermes_structured_call(task: str = AUX_TASK, purpose: str = "screentime product check", max_tokens: int = 800):
+    """A structured-output callable with image blocks: the user's model, or the model set for `task` (an auxiliary
+    task: screentime_verify for the product check, screentime_track for tracking)."""
     from agent.plugin_llm import PluginLlmImageInput
 
     def call(instructions: str, images: list, json_schema: dict, schema_name: str) -> dict:
@@ -159,9 +163,9 @@ def hermes_structured_call():
             input=blocks,
             json_schema=json_schema,
             schema_name=schema_name,
-            task=AUX_TASK if _AUX_REGISTERED else None,
-            purpose="screentime product check",
-            max_tokens=800,
+            task=task if task in _AUX_TASKS else None,
+            purpose=purpose,
+            max_tokens=max_tokens,
             timeout=90,
         )
         usage = getattr(res, "usage", None)
@@ -174,3 +178,25 @@ def hermes_structured_call():
         }
 
     return call
+
+
+def hermes_stt():
+    """Hermes's own speech-to-text (stt in config.yaml) as (callable, label), or (None, why) when it is off."""
+    try:
+        from tools import transcription_tools as tt
+    except Exception as exc:  # an older Hermes or a trimmed install
+        return None, f"Hermes speech-to-text is not available ({type(exc).__name__})."
+    try:
+        cfg = tt._load_stt_config()
+        if not tt.is_stt_enabled(cfg):
+            return None, "Hermes speech-to-text is off (stt.enabled: false in config.yaml)."
+        provider = tt._get_provider(cfg) or "?"
+    except Exception:
+        provider = "?"
+    if provider == "none":
+        return None, "No speech-to-text provider is set up in Hermes (stt in config.yaml)."
+
+    def call(path: str) -> dict:
+        return tt.transcribe_audio(path, source="screentime")
+
+    return call, f"hermes-stt:{provider}"

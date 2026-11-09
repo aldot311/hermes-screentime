@@ -73,7 +73,8 @@ def measure_summary(r: MeasureReport) -> str:
     check = r.verifier + ("" if r.verifier_validated else " (not validated on this task)")
     cost = r.receipt.usd if r.receipt else 0.0
     replay = " Replay of a recorded run: no API calls." if r.engine == "replay" else ""
-    lines.append(f"Product check: {check}. Cost: ${cost:.3f}. Run {r.run_id}.{replay}")
+    tracked = "" if r.engine in ("meta", "replay") else f"Tracked by: {r.receipt.models.get('sam', '?') if r.receipt else '?'}. "
+    lines.append(f"{tracked}Product check: {check}. Cost: ${cost:.3f}. Run {r.run_id}.{replay}")
     for n in r.notes:
         lines.append(f"Note: {n}")
     return "\n".join(lines)
