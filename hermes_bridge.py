@@ -87,42 +87,62 @@ def meta_key() -> Optional[str]:
     return None
 
 
+def _agent_cwd() -> Path:
+    try:
+        from agent.runtime_cwd import resolve_agent_cwd
+
+        return Path(resolve_agent_cwd())
+    except Exception:  # outside Hermes (tests, plain CLI use)
+        return Path.cwd()
+
+
+def allowed_roots() -> list[Path]:
+    """Where a tool may read user files: the session's folder, Hermes's home (chat attachments land in its cache),
+    and the user's home directory. System folders (/etc, /var, /proc, ...) are never read."""
+    roots = [_agent_cwd(), Path.home()]
+    try:
+        roots.append(hermes_home())
+    except Exception:  # plugin storage unavailable outside Hermes
+        pass
+    return [r.resolve() for r in roots]
+
+
 def resolve_path(p: str) -> Path:
-    """A user-named local file: relative paths resolve against the session's folder. URLs and options are refused."""
+    """A user-named local file inside allowed_roots(). Relative paths resolve against the session's folder; URLs,
+    option-like names and media directives are refused; symlinks are followed and judged by where they land."""
     from .screentime_core.errors import ScreentimeError
 
     raw = (p or "").strip().strip('"').strip("'")
-    if not raw or "://" in raw or raw.startswith("-") or "MEDIA:" in raw.upper():
+    if not raw or "://" in raw or raw.startswith("-") or "MEDIA:" in raw.upper() or "\x00" in raw:
         raise ScreentimeError("bad_input", "Give a local file path (an attachment's path works).",
                               fix="Attach the video again, or give its full path.")
     path = Path(raw).expanduser()
     if not path.is_absolute():
-        try:
-            from agent.runtime_cwd import resolve_agent_cwd
-
-            path = Path(resolve_agent_cwd()) / path
-        except Exception:
-            path = Path.cwd() / path
+        path = _agent_cwd() / path
     path = path.resolve()
+    if not any(path.is_relative_to(root) for root in allowed_roots()):
+        raise ScreentimeError("bad_input", f"{path.name} is outside the folders Screen-Time reads.",
+                              fix="Attach the file in the chat, or move it into your home or working folder.")
     if not path.is_file():
         raise ScreentimeError("bad_input", f"File not found: {path.name}", fix="Attach it again or give the full path.")
     return path
 
 
-def owner_key(session_key: str = "") -> str:
-    """The chat a run belongs to (routing key); 'local' outside the gateway."""
+def owner_key(session_key: str = "") -> Optional[str]:
+    """The chat a run belongs to. 'local' for the plain CLI (one user); None inside a gateway chat whose identity is
+    unknown, in which case results are neither stored nor read (fail closed, never a shared bucket)."""
     if session_key:
         return session_key
     try:
         from gateway.session_context import get_session_env
-
-        for name in ("HERMES_SESSION_KEY", "HERMES_SESSION_CHAT_ID"):
-            v = get_session_env(name)
-            if v:
-                return str(v)
-    except Exception:
-        pass
-    return "local"
+    except ImportError:  # not running inside Hermes
+        return "local"
+    platform = (get_session_env("HERMES_SESSION_PLATFORM") or "").strip()
+    for name in ("HERMES_SESSION_KEY", "HERMES_SESSION_CHAT_ID"):
+        v = (get_session_env(name) or "").strip()
+        if v:
+            return v if name == "HERMES_SESSION_KEY" else f"{platform or 'chat'}:{v}"
+    return None if platform and platform not in ("cli", "local") else "local"
 
 
 def hermes_structured_call():

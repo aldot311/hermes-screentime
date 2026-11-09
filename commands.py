@@ -112,7 +112,7 @@ def _selftest() -> str:
 def handle(raw_args: str, *, session_key: str = "", platform: str = "", **_kw: Any) -> str:
     sub = (raw_args or "").strip().split()
     cmd = sub[0].lower() if sub else "help"
-    owner = hb.owner_key(session_key)
+    owner = hb.owner_key(session_key)  # None: a gateway chat we cannot identify (results not stored)
     try:
         if cmd in ("help", "?"):
             return HELP
@@ -124,15 +124,18 @@ def handle(raw_args: str, *, session_key: str = "", platform: str = "", **_kw: A
             from .screentime_core.format import measure_summary
             from .screentime_core.store import RunStore
 
-            report = run_demo(owner)
+            report = run_demo(owner or "")
             text = measure_summary(report)
-            RunStore(hb.db()).save(report, owner=owner, summary="demo: " + text.splitlines()[0])
+            if owner:
+                RunStore(hb.db()).save(report, owner=owner, summary="demo: " + text.splitlines()[0])
             if report.proof_path:
                 text += "\n" + _media_line(report.proof_path, platform)
             return text
         if cmd == "last":
             from .screentime_core.store import RunStore
 
+            if not owner:
+                return "This chat could not be identified, so earlier results are not shown."
             recent = RunStore(hb.db()).recent(owner=owner, limit=1)
             if not recent:
                 return "No Screen-Time runs in this chat yet. Try /screentime demo."

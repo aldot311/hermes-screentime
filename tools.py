@@ -155,7 +155,7 @@ def measure(args: dict, **_kw: Any) -> str:
             video_path=str(video),
             product=product,
             sam_prompt=noun,
-            owner=hb.owner_key(),
+            owner=hb.owner_key() or "",
             photo_path=str(photo) if photo else None,
             brand_names=[" ".join(str(b).split())[:60] for b in (args.get("brand_names") or []) if str(b).strip()][:6],
             terms=terms_from_args(args.get("terms")),
@@ -164,7 +164,10 @@ def measure(args: dict, **_kw: Any) -> str:
         report = run_measure(req, engines, workdir=hb.work_dir() / run_id, outdir=hb.out_dir(run_id), budget=budget,
                              run_id=run_id)
         summary = measure_summary(report)
-        RunStore(conn).save(report, owner=req.owner, summary=summary.splitlines()[0])
+        if req.owner:
+            RunStore(conn).save(report, owner=req.owner, summary=summary.splitlines()[0])
+        else:
+            report.notes.append("This chat could not be identified, so the result was not saved for follow-ups.")
         return _dump(_measure_payload(report, summary))
     except ScreentimeError as exc:
         return _fail(exc)
@@ -179,7 +182,7 @@ def compare(args: dict, **_kw: Any) -> str:
         from .screentime_core.store import RunStore, new_run_id
 
         owner = hb.owner_key()
-        store = RunStore(hb.db())
+        store = RunStore(hb.db()) if owner else None
         run_id = new_run_id("tc")
         work = hb.work_dir() / run_id
         out = hb.out_dir(run_id)
@@ -187,7 +190,7 @@ def compare(args: dict, **_kw: Any) -> str:
         def analyze(p: str, tag: str):
             path = hb.resolve_path(p)
             rep = teardown.analyze(str(path), str(work / tag), run_id=f"{run_id}-{tag}")
-            prior = store.latest_measure_for(rep.video_sha256, owner=owner)
+            prior = store.latest_measure_for(rep.video_sha256, owner=owner) if store else None
             if prior:  # reuse the paid Measure run of the same file: product and brand timing at no cost
                 rep.product_first_seen_sec = prior["metrics"].get("first_seen_sec")
                 said = prior["metrics"].get("mentions") or []
@@ -202,7 +205,8 @@ def compare(args: dict, **_kw: Any) -> str:
             card.render_compare_card(rep, str(png))
             rep.card_path = str(png)
             summary = compare_summary(rep)
-            store.save(rep, owner=owner, summary="compare: " + summary.splitlines()[1] if len(summary.splitlines()) > 1 else "compare")
+            if store:
+                store.save(rep, owner=owner, summary="compare: " + (summary.splitlines()[1] if len(summary.splitlines()) > 1 else ""))
             payload = {"ok": True, "run_id": run_id, "summary": summary,
                        "rows": [{"metric": r.metric, "yours": r.yours, "reference": r.theirs, "difference": r.diff}
                                 for r in rep.rows]}
@@ -211,7 +215,8 @@ def compare(args: dict, **_kw: Any) -> str:
             card.render_teardown_card(yours, str(png))
             yours.card_path = str(png)
             summary = teardown_summary(yours)
-            store.save(yours, owner=owner, summary="teardown: " + summary.splitlines()[0])
+            if store:
+                store.save(yours, owner=owner, summary="teardown: " + summary.splitlines()[0])
             payload = {"ok": True, "run_id": run_id, "summary": summary,
                        "cuts_sec": yours.cuts_sec, "shots": len(yours.shots), "first_cut_sec": yours.first_cut_sec}
         payload.update({"media_tag": f"MEDIA:{png}", "media_note": media_instructions(str(png)),
@@ -228,8 +233,11 @@ def runs(args: dict, **_kw: Any) -> str:
     try:
         from .screentime_core.store import RunStore
 
-        store = RunStore(hb.db())
         owner = hb.owner_key()
+        if not owner:
+            return _dump({"ok": False, "error": "bad_input",
+                          "message": "This chat could not be identified, so earlier results are not shown."})
+        store = RunStore(hb.db())
         run_id = str(args.get("run_id") or "").strip()
         if run_id:
             rep = store.get(run_id, owner=owner)
