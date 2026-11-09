@@ -95,9 +95,11 @@ def teardown_summary(t: TeardownReport) -> str:
 
 
 def compare_summary(c: CompareReport) -> str:
+    from .teardown import format_value
+
     lines = ["Metric | yours | reference | difference"]
     for row in c.rows:
-        lines.append(f"{row.metric} | {_fmt(row.yours)} | {_fmt(row.theirs)} | {row.diff}")
+        lines.append(f"{row.metric} | {format_value(row.metric, row.yours)} | {format_value(row.metric, row.theirs)} | {row.diff}")
     lines.append("Measured, not predicted: no score, no retention or virality claims.")
     return "\n".join(lines)
 

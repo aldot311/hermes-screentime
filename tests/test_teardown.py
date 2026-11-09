@@ -320,7 +320,7 @@ def test_compare_differences_are_neutral_and_specific(reports: dict[str, Teardow
     assert rows["Duration"].diff == "2.5 s longer"
     assert rows["First cut"].theirs is None and rows["First cut"].diff == "none in reference"
     assert rows["Integrated loudness"].yours is None and rows["Integrated loudness"].diff == "none in yours"
-    assert rows["Cuts per 10 s"].yours == [3] and rows["Cuts per 10 s"].diff == "+3"
+    assert rows["Cuts per 10 s"].yours == [3] and rows["Cuts per 10 s"].diff == "3 more"
     for row in c.rows:
         assert not any(w in row.diff.lower() for w in JUDGEMENT_WORDS), row
 
@@ -346,7 +346,7 @@ def test_compare_wording_rounds_like_the_display() -> None:
     assert rows["First cut"].yours == 2.0 and rows["First cut"].theirs == 2.0 and rows["First cut"].diff == "same"
     assert rows["Integrated loudness"].diff == "2.0 LU quieter"
     assert rows["First sound"].diff == "1.5 s later"
-    assert rows["Cuts per 10 s"].diff == "+1, -1 (first 20 s)"
+    assert rows["Cuts per 10 s"].diff == "1 more in 0-10 s, 1 fewer in 10-20 s (first 20 s)"
     assert rows["Longest shot"].yours == "12.0 s at 4.0 s"
     assert rows["Longest shot"].diff == "7.0 s shorter, starts 3.0 s later"
     assert rows["Pixel change (mean)"].yours == round((2.0 * 1 + 4.0 * 19) / 20, 1)

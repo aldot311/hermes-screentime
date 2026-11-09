@@ -808,7 +808,14 @@ def _diff_windows(y: Sequence[int], t: Sequence[int]) -> str:
     span = f" (first {n * CUTS_WINDOW_SEC:g} s)" if len(y) != len(t) else ""
     if all(d == 0 for d in deltas):
         return "same" + span
-    return ", ".join(f"+{d}" if d > 0 else str(d) for d in deltas) + span
+    if n == 1:  # one window: plain words, as every other row reads
+        return _diff_count(y[0], t[0]) + span
+    words = []
+    for i, d in enumerate(deltas):
+        if d:
+            lo, hi = i * CUTS_WINDOW_SEC, (i + 1) * CUTS_WINDOW_SEC
+            words.append(f"{abs(d)} {'more' if d > 0 else 'fewer'} in {lo:g}-{hi:g} s")
+    return ", ".join(words) + span
 
 
 def mean_pixel_change(report: TeardownReport) -> Optional[float]:
