@@ -1,0 +1,20 @@
+[project]
+name = "hermes-screentime"
+version = "0.1.0"
+description = "Screen-Time for Hermes Agent: measure a product's seconds on screen with proof, and compare edits shot by shot."
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = [
+    "httpx>=0.27,<1",
+    "pillow>=10.4,<14",
+    "meta-sam-parser>=0.1,<0.3",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "--import-mode=importlib -q"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
