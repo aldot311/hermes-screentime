@@ -15,7 +15,7 @@ def _pct(x: float) -> str:
     return f"{x * 100:.0f}%"
 
 
-def short_label(product: str, limit: int = 48) -> str:
+def short_label(product: str, limit: int = 64) -> str:
     """A short name for headlines: the description up to its first colon, comma or semicolon, without 'a/an/the'."""
     text = " ".join((product or "").split())
     for sep in (":", ";", ","):
