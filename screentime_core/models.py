@@ -55,7 +55,7 @@ def _coerce(tp: Any, value: Any) -> Any:
     if origin is list and args:
         return [_coerce(args[0], v) for v in value]
     if origin is tuple and args:
-        return tuple(_coerce(a, v) for a, v in zip(args, value))
+        return tuple(_coerce(a, v) for a, v in zip(args, value, strict=False))
     # Optional[X] / X | None: try the non-None member
     if args and type(None) in args:
         inner = [a for a in args if a is not type(None)]

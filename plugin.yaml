@@ -1,0 +1,46 @@
+name: screentime
+version: "0.1.0"
+description: "Measure how long a product is on screen in a video, with look-alikes rejected, contract terms checked against the frames that prove them, and a proof reel. Compare a draft with a reference take, shot by shot."
+author: Aldo Tile (Aetrai)
+manifest_version: 2
+api_version: 1
+license: MIT
+homepage: https://github.com/aldot311/hermes-screentime
+tags: [video, measurement, sponsorship, creators, brands]
+requires_hermes: ">=0.23.0"
+provides_tools:
+  - screentime_measure
+  - screentime_compare
+  - screentime_runs
+provides_hooks: []
+config_schema:
+  meta_api_key:
+    type: secret
+    env: META_MODEL_API_KEY
+    required: false
+    label: "Meta Model API key"
+    description: "Used only by Measure (SAM 3.1 tracking, Muse Spark product check, Voice Transcribe). Compare and the demo need no key."
+  verifier:
+    type: str
+    choices: [auto, meta, hermes]
+    default: auto
+    label: "Product check"
+    description: "auto: Muse Spark when a Meta key is set, otherwise your own Hermes vision model (task screentime_verify). meta: always Muse Spark. hermes: always your model."
+  listen:
+    type: bool
+    default: true
+    label: "Listen for the brand name"
+    description: "Transcribe the audio with Muse Voice Transcribe (needs the Meta key) to check spoken mentions and disclosures."
+  max_usd_per_video:
+    type: float
+    default: 0.5
+    label: "Spend cap per video (USD)"
+    description: "Measure refuses to start a paid call that would pass this cap. About $0.003 per second of video plus about $0.02 per checked object."
+  max_usd_per_day:
+    type: float
+    default: 5.0
+    label: "Spend cap per day (USD)"
+  max_video_seconds:
+    type: int
+    default: 120
+    label: "Longest video Measure accepts (seconds)"
