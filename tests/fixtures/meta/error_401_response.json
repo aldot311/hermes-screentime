@@ -1,0 +1,12 @@
+{
+  "recorded_at": "2026-11-09T04:23:37+00:00",
+  "status": 401,
+  "response": {
+    "error": {
+      "code": "invalid_api_key",
+      "message": "Unauthorized",
+      "param": null,
+      "type": "authentication_error"
+    }
+  }
+}

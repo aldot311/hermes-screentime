@@ -1,0 +1,21 @@
+{
+  "prompt": "drink can",
+  "frames_billed": 150,
+  "frames_estimated": false,
+  "ms": 7207,
+  "usd": 0.03,
+  "recorded_at": "2026-11-09T04:23:12+00:00",
+  "model": "sam-3.1",
+  "mask_encoding": "one_bit",
+  "include_confidence": true,
+  "width": 540,
+  "height": 960,
+  "frame_count": 150,
+  "fps": 15,
+  "video": "sample.mp4",
+  "video_sha256": "8e0599428941083b2c23ef7b41a0d187263567badbdea136380b6789dd465994",
+  "source_window_sec": [
+    0.0,
+    10.0
+  ]
+}

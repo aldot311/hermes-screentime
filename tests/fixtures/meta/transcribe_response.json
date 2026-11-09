@@ -1,0 +1,28 @@
+{
+  "recorded_at": "2026-11-09T04:23:37+00:00",
+  "model": "muse-voice-transcribe-1.0",
+  "source": "lc-12-aldo.mp4",
+  "source_window_sec": [
+    2.0,
+    6.0
+  ],
+  "audio_sec": 4.0,
+  "keywords": [
+    "LaCroix"
+  ],
+  "usd": 0.0002,
+  "ms": 1903,
+  "response": {
+    "sessionId": "voyager/transcribe/1D7B6275B5544AD3A57FEE67BCB7726E",
+    "transcript": "I'm settling a debate, LaCroix or Poppy?",
+    "audioDurationMs": 4080,
+    "turns": [
+      {
+        "turnId": 0,
+        "startMs": 60,
+        "endMs": 3580,
+        "transcript": "I'm settling a debate, LaCroix or Poppy?"
+      }
+    ]
+  }
+}
