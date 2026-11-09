@@ -145,6 +145,7 @@ class VideoMetrics:
     visible_frames: list[int]  # frame indices actually counted
     mentions: list[Mention] = field(default_factory=list)
     spoken_checked: Optional[bool] = None  # False = audio not transcribed (mentions unknown, not none)
+    visible_areas: list[float] = field(default_factory=list)  # largest counted instance per visible frame (min_area)
 
 
 @dataclass
