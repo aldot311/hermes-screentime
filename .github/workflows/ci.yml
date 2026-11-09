@@ -1,0 +1,26 @@
+name: ci
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v6
+      - name: ffmpeg
+        run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
+      - name: deps (3-day release quarantine)
+        env:
+          UV_EXCLUDE_NEWER: "3 days"
+        run: |
+          uv venv --python 3.14 .venv
+          uv pip install --python .venv -r requirements-dev.txt
+      - name: lint
+        run: .venv/bin/ruff check .
+      - name: tests
+        run: .venv/bin/python -m pytest
