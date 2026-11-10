@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import base64
 import datetime
-import gzip
 import io
 import json
 import time
@@ -776,7 +775,7 @@ def test_recorded_upload_and_401_answers():
 def test_recorded_sam_stream_replays_to_the_recorded_text():
     """The live stream (gzipped, byte for byte): 150 deltas, then output_text.done, content_part.done,
     output_item.done and response.completed, each repeating the full text."""
-    stream = gzip.decompress(_fixture("sam_stream.sse.gz").read_bytes())
+    stream = _fixture("sam_stream.sse").read_bytes()
     meta = json.loads((DEMO / "sample.sam.json").read_text())
     result = make(Api(sse_response(stream))).sam_track(meta["prompt"], file_id="file-x",
                                                        frame_count=meta["frame_count"])
